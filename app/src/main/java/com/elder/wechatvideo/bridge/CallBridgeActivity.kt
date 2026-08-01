@@ -18,6 +18,7 @@ import com.elder.wechatvideo.util.WeChatConstants
 import com.elder.wechatvideo.util.WeChatVersionDetector
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -52,15 +53,7 @@ class CallBridgeActivity : ComponentActivity() {
             return
         }
 
-        // 1. 检查无障碍服务
-        if (!PermissionUtils.isAccessibilityServiceEnabled(
-                this, WeChatAccessibilityService::class.java
-            )) {
-            Toast.makeText(this, R.string.accessibility_not_enabled, Toast.LENGTH_LONG).show()
-            PermissionUtils.openAccessibilitySettings(this)
-            finish()
-            return
-        }
+        // 1. 无障碍检查已移入协程内（带重试），解决重启后 Settings.Secure 延迟恢复的问题
 
         // 2. 检查按键校准是否已完成
         if (!PositionConfig.isCalibrated(this)) {
@@ -92,10 +85,27 @@ class CallBridgeActivity : ComponentActivity() {
 
         // 3. 先启动微信主界面，确认成功后再武装无障碍服务
         lifecycleScope.launch {
+            // ---- 无障碍服务检查（带重试，解决重启后延迟恢复） ----
+            var a11yEnabled = false
+            repeat(6) { attempt ->
+                if (PermissionUtils.isAccessibilityServiceEnabled(
+                        this@CallBridgeActivity, WeChatAccessibilityService::class.java
+                    )) {
+                    a11yEnabled = true
+                    return@repeat
+                }
+                if (attempt < 5) delay(500)
+            }
+            if (!a11yEnabled) {
+                Toast.makeText(this@CallBridgeActivity, R.string.accessibility_not_enabled, Toast.LENGTH_LONG).show()
+                PermissionUtils.openAccessibilitySettings(this@CallBridgeActivity)
+                finish()
+                return@launch
+            }
+
             // ---- B10 (b)：校验传入的 target 联系人在 Room 数据库中真实存在 ----
             val contact = resolveContact()
             if (contact == null) {
-                // 校验失败：不武装无障碍服务，直接提示并退出
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CallBridgeActivity, R.string.invalid_contact, Toast.LENGTH_LONG).show()
                     finish()
@@ -120,13 +130,18 @@ class CallBridgeActivity : ComponentActivity() {
                 return@launch
             }
 
-            // 微信已成功拉起，通知无障碍服务开始工作（传入搜索名字）
-            val callAccepted = WeChatAccessibilityService.startCall(searchName)
+            // ---- 等待无障碍服务绑定（重启后系统需要几秒重新 bind） ----
+            var callAccepted = false
+            repeat(6) { attempt ->
+                callAccepted = WeChatAccessibilityService.startCall(searchName)
+                if (callAccepted) return@repeat
+                if (attempt < 5) delay(500)
+            }
             if (!callAccepted) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@CallBridgeActivity,
-                        R.string.call_busy,
+                        "无障碍服务启动中，请稍后再试",
                         Toast.LENGTH_LONG
                     ).show()
                     finish()

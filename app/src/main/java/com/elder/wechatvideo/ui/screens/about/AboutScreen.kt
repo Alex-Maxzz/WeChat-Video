@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.6.3",
+            date = "2026-08-02",
+            changes = "· 修复 OCR 严格模式失效：搜索框文本被误判为联系人结果\n· OCR 匹配逻辑与无障碍节点查找对齐（精确/前缀），排除搜索框区域\n· 新增 22 项单元测试覆盖核心匹配场景\n· 重启后拨号不再误报\"未开启\"：无障碍检查改为 500ms×6 次重试，等待系统恢复绑定"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.6.2",
             date = "2026-08-01",
             changes = "· 修复 OCR 截图失败：补全无障碍服务 canTakeScreenshot 权限声明\n· 移除所有调试弹窗（DEBUG Toast），正式环境更干净\n· 取消按钮改为固定位置（仅点击，不可拖动），防止误触移位"
