@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一键视频 · 版本更新文档</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'Segoe UI', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    line-height: 1.7;
+    padding: 0;
+  }
+  .header {
+    background: linear-gradient(135deg, #6750A4 0%, #9C27B0 100%);
+    color: #fff;
+    padding: 60px 20px 50px;
+    text-align: center;
+  }
+  .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
+  .header .subtitle { font-size: 16px; opacity: 0.9; }
+  .header .current-version {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 8px 24px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+  }
+  .container {
+    max-width: 860px;
+    margin: -30px auto 60px;
+    padding: 0 20px;
+  }
+
+  /* Version card */
+  .version-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .version-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .version-header.left-border {
+    border-left: 5px solid #6750A4;
+  }
+  .version-header.left-border-blue { border-left: 5px solid #2196F3; }
+  .version-header.left-border-green { border-left: 5px solid #4CAF50; }
+  .version-header.left-border-orange { border-left: 5px solid #FF9800; }
+  .version-header.left-border-pink { border-left: 5px solid #E91E63; }
+  .version-header.left-border-teal { border-left: 5px solid #009688; }
+
+  .version-tag {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1d1d1f;
+  }
+  .version-date {
+    font-size: 13px;
+    color: #888;
+    background: #f5f5f7;
+    padding: 4px 12px;
+    border-radius: 12px;
+  }
+  .version-body {
+    padding: 24px 28px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #6750A4;
+    margin-bottom: 10px;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .feature-list {
+    list-style: none;
+    padding: 0;
+  }
+  .feature-list li {
+    padding: 6px 0 6px 24px;
+    position: relative;
+    font-size: 14.5px;
+    color: #333;
+  }
+  .feature-list li::before {
+    content: "▸";
+    position: absolute;
+    left: 6px;
+    color: #6750A4;
+    font-weight: 700;
+  }
+  .feature-list li.fix::before { content: "🔧"; font-size: 12px; left: 0; }
+  .feature-list li.new::before { content: "✨"; font-size: 12px; left: 0; }
+  .feature-list li.opt::before { content: "⚡"; font-size: 12px; left: 0; }
+
+  .tech-path {
+    background: #f8f6fc;
+    border: 1px solid #e8e0f5;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 12px;
+  }
+  .tech-path-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6750A4;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .tech-path-content {
+    font-size: 13.5px;
+    color: #555;
+    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+    line-height: 1.8;
+  }
+  .tech-path-content .file {
+    color: #1565C0;
+    background: #e3f2fd;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+  .tech-path-content .keyword {
+    color: #6750A4;
+    font-weight: 600;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge.current { background: #4CAF50; color: #fff; }
+  .badge.major { background: #FF9800; color: #fff; }
+  .badge.fix { background: #2196F3; color: #fff; }
+
+  .summary-box {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  .summary-box h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #1d1d1f;
+  }
+  .summary-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    padding: 16px 12px;
+    background: #f8f6fc;
+    border-radius: 12px;
+  }
+  .stat-item .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #6750A4;
+  }
+  .stat-item .label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 600px) {
+    .version-header { flex-direction: column; gap: 8px; align-items: flex-start; }
+    .summary-stats { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>一键视频</h1>
+  <div class="subtitle">老人微信视频通话一键拨打工具 · 版本更新文档</div>
+  <div class="current-version">当前版本：V1.6.3_Alis</div>
+</div>
+
+<div class="container">
+
+  <!-- Summary -->
+  <div class="summary-box">
+    <h2>版本概览</h2>
+    <div class="summary-stats">
+      <div class="stat-item">
+        <div class="num">17</div>
+        <div class="label">版本迭代</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">4</div>
+        <div class="label">校准步骤（原10步）</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">38</div>
+        <div class="label">单元测试（全部通过）</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">V2</div>
+        <div class="label">架构重构</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.3 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.6.3_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">OCR 严格模式失效：搜索不存在的联系人时程序误判命中（搜索框文本被当作联系人结果），导致绕过严格模式直接盲点。修复匹配逻辑并新增 22 项单元测试覆盖核心场景</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">OCR 联系人匹配口径与第一层无障碍节点查找对齐（精确/前缀匹配），不再使用反向包含，避免单字符/空字符串误命中</li>
+        <li class="opt">排除屏幕顶部 15% 搜索框区域，防止搜索词本身被识别为联系人结果</li>
+        <li class="opt">匹配判定逻辑提取为顶层纯函数 isContactMatch，便于独立单元测试，避免 object 静态初始化加载 ML Kit</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">OcrHelper.kt</span> → 提取 isContactMatch 顶层函数，修复 contains 误命中缺陷，排除搜索框区域<br>
+          <span class="file">OcrHelperTest.kt</span> → 新增 22 项纯 JVM 单元测试（搜索框误命中/反向包含/边界/严格模式场景）<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=28, versionName="1.6.3_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.2 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.6.2_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">OCR 截图失败：无障碍服务配置补全 android:canTakeScreenshot="true"，所有 API 30+ 设备恢复正常</li>
+        <li class="fix">移除全部调试弹窗（DEBUG Toast），正式环境不再弹出诊断信息</li>
+        <li class="fix">取消按钮改为固定位置（仅点击取消，不可拖动），防止老人误触移位</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">accessibility_service_config.xml</span> → +canTakeScreenshot="true"<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → 移除 debug Toast / catch 块<br>
+          <span class="file">OverlayController.kt</span> → 取消按钮去掉拖动逻辑<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=27, versionName="1.6.2_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.1 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.6.1_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复（代码审查）</div>
+      <ul class="feature-list">
+        <li class="fix">保活服务冷启动缺口：MainActivity.onCreate 前台启动 KeepAliveService，无障碍不再被系统杀</li>
+        <li class="fix">Direct Boot 崩溃：移除 LOCKED_BOOT_COMPLETED，避免加密 SharedPreferences 异常</li>
+        <li class="fix">AccessibilityNodeInfo 泄漏：clickNode 统一 finally recycle + EditText 用后即收</li>
+        <li class="fix">onInterrupt 隐藏进度浮窗，不再残留</li>
+        <li class="fix">校准服务 stopForeground(true) 再 stopSelf，通知不残留</li>
+        <li class="opt">取消按钮触控区 36→48dp（适老化标准）</li>
+        <li class="opt">OCR 关闭时显示"正在定位"而非"智能识别"</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">MainActivity.kt</span> → 冷启动 KeepAliveService.startService<br>
+          <span class="file">AndroidManifest.xml</span> → 移除 LOCKED_BOOT_COMPLETED<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → clickNode finally + editText recycle + onInterrupt hide<br>
+          <span class="file">CalibrationOverlayService.kt</span> → stopForeground(true)<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=26, versionName="1.6.1_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.0 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.6.0_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">新增设置页面（底部第三个 Tab）：集中管理所有偏好开关</li>
+        <li class="new">OCR 智能识别开关（默认开启）+ 严格模式子开关（识别不到就停止，不盲戳）</li>
+        <li class="new">深色/浅色/跟随系统 三档主题切换</li>
+        <li class="new">拨号浮窗位置固定开关（默认关闭=可拖动）</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">自动拨打开关从校准页迁移到设置页，校准页更简洁</li>
+        <li class="opt">关于页面移入设置子页面，底部 Tab 更合理</li>
+        <li class="opt">三层拨号防线顺序：节点→OCR（精准）→坐标（盲戳最后手段）</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">SettingsPrefs.kt</span> → 新增：OCR/严格/浮窗固定/主题偏好<br>
+          <span class="file">SettingsScreen.kt</span> → 新增：设置页 Compose UI<br>
+          <span class="file">AppNavigation.kt</span> → 3 Tab（联系人/保活/设置），About 改子页面<br>
+          <span class="file">Theme.kt</span> → 读取 themeMode 偏好切换深/浅色<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=25, versionName="1.6.0_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.5.0 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.5.0_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">OCR 智能识别兜底：搜索结果点击失败时，自动截图 → ML Kit 中文识别 → 定位联系人 → 点击</li>
+        <li class="new">三层拨号防线：无障碍节点（0ms）→ 校准坐标（0ms）→ OCR 截图（~300ms），成功率大幅提升</li>
+        <li class="new">完全端侧离线：不联网、不弹权限弹窗、无调用次数限制、零费用</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">拨号浮窗双窗口：显示层 FLAG_NOT_TOUCHABLE 穿透 + 取消按钮独立窗口</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">OcrHelper.kt</span> → 新增：takeScreenshot + ML Kit ChineseTextRecognizer + findContactPosition<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → tryClickSearchResult 第3层 OCR 兜底<br>
+          <span class="file">OverlayController.kt</span> → 双窗口重写<br>
+          <span class="keyword">build.gradle.kts</span> → +mlkit:text-recognition-chinese:16.0.1, versionCode=24
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.4.6 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.4.6_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">拨号浮窗改双窗口架构：显示层 FLAG_NOT_TOUCHABLE 完全穿透，微信操作零阻挡</li>
+        <li class="new">取消按钮独立窗口（64×36dp）：单击取消、按住拖动整体、松手保存位置</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">OverlayController.kt</span> → 双窗口重写（displayWindow + buttonWindow）<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=23, versionName="1.4.6_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.4.5 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.4.5_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🛡️ 稳定版</div>
+      <ul class="feature-list">
+        <li class="fix">修复浮窗在系统字体放大时变形（全部 SP→DIP，不受字体缩放影响）</li>
+        <li class="fix">取消按钮固定 64×36dp，任何情况下不变形</li>
+        <li class="fix">校准浮窗同步 DIP 修复，按钮不再被撑大</li>
+        <li class="opt">拨号胶囊条定型：55dp 高、~75% 屏宽、文字超长 ellipsize</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">OverlayController.kt</span> → COMPLEX_UNIT_DIP + 固定 LayoutParams<br>
+          <span class="file">CalibrationOverlayService.kt</span> → 8处 SP→DIP<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=22, versionName="1.4.5_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.4.4 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.4.4_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">拨号胶囊条高度 42→55dp，取消按钮改红色渐变底(#EF4444→#DC2626)+白字，高对比度</li>
+        <li class="opt">长文本 maxWidth=62%屏宽 + ellipsize END，取消按钮永远可见</li>
+        <li class="opt">拖动 + SharedPreferences 位置记忆，默认居中</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">OverlayController.kt</span> → 55dp + maxWidth + ellipsize + drag memory<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=21, versionName="1.4.4_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.4.3 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.4.3_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">拨号进度浮窗重设计：细长胶囊条（40dp 高），屏幕居中，可拖动</li>
+        <li class="new">三态显示：进行中紫色图标 + 步骤 badge / 成功青绿勾 / 失败珊瑚叉</li>
+        <li class="new">取消按钮全程可见（珊瑚色 ghost 胶囊），不再只在部分状态出现</li>
+      </ul>
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">校准悬浮窗按钮改 TextView，彻底修复 Material 主题下胶囊变方形</li>
+        <li class="fix">校准卡片改屏幕居中 + WRAP_CONTENT，不再遮挡四角操作区</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">OverlayController.kt</span> → 全量重写，胶囊条 + 三态 + 拖动<br>
+          <span class="file">CalibrationOverlayService.kt</span> → Button→TextView + Gravity.CENTER<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=20, versionName="1.4.3_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.4.2 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.4.2_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">微信升级不再阻断拨号：改为 Toast 提示后继续呼叫，与设备参数变化处理一致</li>
+        <li class="fix">修复未校准「视频通话确认」按钮时静默 DONE 的 bug，改为明确 fail 提示</li>
+        <li class="fix">修复 AccessibilityNodeInfo 泄漏：所有 rootInActiveWindow 加 try/finally recycle</li>
+        <li class="fix">NodeFinder.treeContainsAny 改纯查询不回收，防 OEM ROM use-after-recycle</li>
+        <li class="fix">findVideoCallButton resource-id 兜底分支增加文本校验，防跨语义 id 误点</li>
+        <li class="fix">shortcutPinned 不再乐观标记，等系统回调确认</li>
+      </ul>
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">校准服务改前台服务（startForeground），切到微信后不再被 Android 12+ 回收</li>
+        <li class="new">校准悬浮窗 v2 重设计：底部圆角卡片、82% 半透、紫色胶囊按钮、步骤 badge</li>
+        <li class="new">快捷方式图标：去掉右下角徽标，满幅渐变无白边</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">CallBridgeActivity.kt</span> → 微信升级改非阻断<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → try/finally recycle + fail 替代静默 DONE<br>
+          <span class="file">CalibrationOverlayService.kt</span> → 前台服务 + v2 UI<br>
+          <span class="file">NodeFinder.kt</span> → 纯查询 + 文本校验<br>
+          <span class="file">ShortcutHelper.kt</span> → 满幅渐变，移除 badge<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=19, versionName="1.4.2_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.4.1 -->
+  <div class="version-card">
+    <div class="version-header left-border-green">
+      <span class="version-tag">V1.4.1_Alis</span>
+      <span class="version-date">2026-08-01</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">删除联系人后桌面快捷方式图标残留：removeDynamicShortcuts 仅从动态列表移除，无法清除已固定到桌面的图标。改用 disableShortcuts 使启动器自动隐藏/变灰残留图标，并配合 removeDynamicShortcuts 清理动态列表</li>
+        <li class="fix">微信未安装时无障碍服务空转 60 秒：原代码先 startCall 武装服务再启动微信，微信未安装时服务白等总超时。改为先 launchWeChatMain 确认成功后再 startCall，失败立即提示并退出</li>
+        <li class="fix">startCall 静默拒绝无反馈：原方法返回 Unit，服务未连接或呼叫中时 CallBridgeActivity 无法感知。改为返回 Boolean，调用方可据实向用户反馈「拨号服务正忙，请稍后再试」</li>
+        <li class="fix">getRunningServices 废弃 API：Android 8.0+ 该 API 仅返回自身应用服务，未来版本可能彻底移除。改用 KeepAliveService.isRunning 静态标志位（onCreate 置 true / onDestroy 置 false），零开销且未来兼容</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">开机自启默认开启确认：AutostartPrefs 默认值 true 与所有文档注释统一，确保老人开机即保活，无需手动设置</li>
+        <li class="opt">新增 call_busy 字符串资源，服务正忙时给出友好中文提示</li>
+        <li class="opt">PermissionUtils 移除不再需要的 ActivityManager 导入</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">ShortcutHelper.kt</span> → <code>unpinShortcut()</code> 增加 <code>disableShortcuts()</code> 调用<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>startCall()</code> 返回 <code>Boolean</code>，区分服务未连接 / 呼叫中 / 成功三种情况<br>
+          <span class="file">CallBridgeActivity.kt</span> → 调整为「先启动微信 → 确认成功 → 再武装服务」顺序，失败路径提前退出<br>
+          <span class="file">KeepAliveService.kt</span> → 新增 <code>companion object { var isRunning }</code> 静态标志位，<code>onCreate</code> / <code>onDestroy</code> 维护<br>
+          <span class="file">PermissionUtils.kt</span> → <code>isKeepAliveServiceRunning()</code> 改为读取 <code>KeepAliveService.isRunning</code><br>
+          <span class="file">AutostartPrefs.kt</span> → 注释修正与默认值 true 一致<br>
+          <span class="file">strings.xml</span> → 新增 <code>call_busy</code> 字符串<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=18, versionName="1.4.1_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.4.0 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.4.0_Alis</span>
+      <span class="version-date">2026-07-31</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">全新 V2 界面设计：暗色优先主题，品牌紫 #9B8CFF 主色调，全面对齐 UI设计预览 规范</li>
+        <li class="new">联系人列表重设计：18px 圆角卡片、8色渐变头像、胶囊形视频按钮、surface 底色 + 描边</li>
+        <li class="new">保活页新增 Canvas 环形进度动画、渐变校准入口卡片（整体可点击）</li>
+        <li class="new">应用图标升级为渐变背景（#9B8CFF → #10B59A，315° 对角渐变）</li>
+        <li class="new">底部导航栏适配 V2 设计规范：surface 底色、primary 选中色、8% alpha 指示器</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">关于页内嵌更新日志补充 V1.3.4 / V1.4.0 条目</li>
+        <li class="opt">FAB 改为 primaryContainer + 16dp 方形圆角，符合 v2 设计系统</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">ContactListScreen.kt</span> → 全面重写，对齐 v2 卡片/头像/按钮规范<br>
+          <span class="file">KeepAliveScreen.kt</span> → 环形进度 Canvas + 渐变校准入口<br>
+          <span class="file">AppNavigation.kt</span> → NavigationBar v2 配色<br>
+          <span class="file">ic_launcher_background.xml</span> → 新增渐变 shape drawable<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=17, versionName="1.4.0_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.3.4 -->
+  <div class="version-card">
+    <div class="version-header left-border-blue">
+      <span class="version-tag">V1.3.4_Alis</span>
+      <span class="version-date">2026-07-31</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">适配 v2 设计系统：主色改为 #9B8CFF 薰衣草紫，三级色改为 #FFB4A2 暖珊瑚，深色主题为默认优先</li>
+        <li class="new">关闭 Material You 动态取色，使用品牌固定色，确保所有设备视觉一致</li>
+        <li class="new">头像渐变色从 6 色扩展为 8 色（新增堇紫、红、碧），与桌面快捷方式图标同源</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">Color.kt 全量对齐 UI设计预览/设计系统预览v2.html 中的 Design Tokens</li>
+        <li class="opt">ShortcutHelper 桌面图标渐变色与 App 内头像统一为 8 色方案</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">Color.kt</span> → 全量重写，对齐 v2 Design Tokens（深色/浅色双主题 + 8 色头像）<br>
+          <span class="file">Theme.kt</span> → dynamicColor=false，深色优先，移除 Build.VERSION 动态取色分支<br>
+          <span class="file">ShortcutHelper.kt</span> → GRADIENTS 6 色 → 8 色（与 Color.kt AvatarGradients 同源）<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=16, versionName="1.3.4_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.3.3 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.3.3_Alis <span class="badge fix">稳定版</span></span>
+      <span class="version-date">2026-07-31</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">退出 App 后从系统「最近任务」列表隐藏卡片（android:excludeFromRecents），但前台保活服务继续后台运行，老人误划掉卡片也不会中断保活</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">保活强化——前台通知不可滑除、从最近任务划掉时服务自动重启、保活设置页新增厂商自启动/电池优化引导，多管齐下防误杀</li>
+        <li class="opt">前台通知文案优化为面向老人的友好提示，状态更易懂</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">AndroidManifest.xml</span> → <span class="keyword">MainActivity</span> 添加 <code>android:excludeFromRecents="true"</code>，退出后不在最近任务列表显示卡片<br>
+          <span class="file">KeepAliveService.kt</span> → 前台通知加 <code>FLAG_ONGOING_EVENT</code> 不可滑除 + <code>onTaskRemoved()</code> 中重启服务<br>
+          <span class="file">KeepAliveScreen.kt</span> → 新增厂商自启动/电池优化引导项<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=15, versionName="1.3.3_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.3.2 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.3.2_Alis <span class="badge fix">稳定版</span></span>
+      <span class="version-date">2026-07-31</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">状态机全面加锁（synchronized）：修复超时检查器与状态转换的并发竞态，杜绝状态错乱</li>
+        <li class="fix">所有延迟回调统一存活检查（postDelayedSafely）：服务销毁后残留任务不再触发，消除潜在崩溃</li>
+        <li class="fix">修复 NodeFinder 多处 AccessibilityNodeInfo 节点泄漏（findEditableNode 递归提前返回 / 搜索、加号、视频按钮查找 / BFS 遍历 / clickNode parent 链）</li>
+        <li class="fix">修复 PositionConfig 旧坐标迁移的并发竞态（synchronized + commit 同步落盘）</li>
+        <li class="fix">OverlayController.destroy 完整清理（回调引用、handler 队列）并补充异常日志</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">分状态超时：搜索阶段 15s、落点校验 12s、点击阶段 8s，总超时 75s→60s，失败更快反馈</li>
+        <li class="opt">落点校验兜底：识别失败自动返回并重试一次搜索（限 1 次），仍失败提示「没有拨通，请重试一次」</li>
+        <li class="opt">超时/失败提示全面中文化，不再静默结束</li>
+        <li class="opt">校准时记录设备参数（分辨率/DPI/字体缩放），拨号前检测变化，变化时提示「手机显示设置有变化，建议重新校准按键位置」（仅提示不阻断）</li>
+        <li class="opt">重写 PositionConfigTest（原用不存在的 mock 类无法编译），16 个单元测试全部通过</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">CallStateMachine.kt</span> → synchronized 全面加锁 + 分状态超时常量（总超时 75s→60s）<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → postDelayedSafely 统一存活检查 + 落点校验兜底重试 + 超时/失败中文提示<br>
+          <span class="file">NodeFinder.kt</span> → 多处 AccessibilityNodeInfo recycle 泄漏修复<br>
+          <span class="file">PositionConfig.kt</span> → 迁移竞态修复 + 设备参数记录/变化检测<br>
+          <span class="file">CallBridgeActivity.kt</span> → 拨号前设备显示参数变化提醒（仅提示不阻断）<br>
+          <span class="file">OverlayController.kt</span> → destroy 完整清理 + 异常日志<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=14, versionName="1.3.2_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.3.1 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.3.1_Alis <span class="badge fix">稳定版</span></span>
+      <span class="version-date">2026-07-30</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">60Hz 屏幕适配：手势点击时长 80ms→120ms（60Hz 下 80ms 仅约 5 帧，部分机型触摸事件丢失）</li>
+        <li class="fix">取消呼叫后超时检查器仍触发的竞态：cancelCall() 现在同步移除 timeoutChecker 回调</li>
+        <li class="fix">VOIP 窗口事件重复到达导致完成逻辑多次执行：增加 state==DONE 守卫 + 移除超时检查</li>
+        <li class="fix">搜索结果页 rootInActiveWindow 为空时静默返回导致状态机卡死：改为延迟 800ms 重试</li>
+        <li class="fix">onDestroy 极端情况下 overlay lateinit 未初始化崩溃：增加 isInitialized 守卫</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">步骤延迟全面放宽适配 60Hz / 低端机：STEP_DELAY 1.5→2s，PLUS_PANEL 1→1.5s，搜索结果 3→3.5s，微信加载 3→4s</li>
+        <li class="opt">单步超时 15→18s，总超时 60→75s，给低端机更多渲染时间</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">CallStateMachine.kt</span> → 7 个时间常量全面放宽（注释标注原值）<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → cancelCall 加 removeCallbacks / onAccessibilityEvent 加 DONE 守卫 / onDestroy 加 isInitialized / tryClickSearchResult null root 重试 / gestureClickAt 80→120ms<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=13, versionName="1.3.1_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.3.0 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.3.0_Alis <span class="badge major">架构重构</span></span>
+      <span class="version-date">2026-07-30</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🏗️ 架构重构（本次核心）</div>
+      <ul class="feature-list">
+        <li class="new">无障碍服务从 1240 行 god class 拆分为 3 个独立组件 + 薄胶水层：CallStateMachine（纯 Kotlin 状态机，可单测）+ NodeFinder（节点查找/四道防线过滤）+ OverlayController（悬浮窗+取消按钮），Service 精简至 ~300 行协调代码</li>
+        <li class="new">超时常量统一收归 CallStateMachine.Companion（原散落在 Service 各处的 STEP_DELAY / STATE_TIMEOUT 等 12 个魔法数字），消除重复定义</li>
+        <li class="new">NodeFinder.findEditableNode 修复子节点未 recycle 的内存泄漏</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">状态机零 Android 依赖，后续可直接写纯 JVM 单元测试覆盖全路径</li>
+        <li class="opt">节点查找逻辑独立，微信适配改动只需修改 NodeFinder，不碰 Service</li>
+        <li class="opt">悬浮窗管理独立，后续可替换为 Compose 悬浮窗或通知栏进度</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="keyword">core/</span>(新包) → <span class="file">CallStateMachine.kt</span>（State enum + 重试计数 + 超时判定 + 12 个统一常量）<br>
+          <span class="keyword">core/</span> → <span class="file">NodeFinder.kt</span>（搜索框/搜索按钮/联系人匹配/加号/视频通话/落点校验，含 recycle 修复）<br>
+          <span class="keyword">core/</span> → <span class="file">OverlayController.kt</span>（悬浮窗创建/更新/隐藏/销毁 + 取消按钮回调）<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → 重写为 ~300 行薄胶水层，委托 core/ 三组件<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=12, versionName="1.3.0_Alis"
+        </div>
+      </div>
+      <div class="tech-path">
+        <div class="tech-path-label">架构对比</div>
+        <div class="tech-path-content">
+          <span class="keyword">V1.2.0</span>：Service(1240行) = 状态 + 节点 + 手势 + 悬浮窗 + 超时 全耦合<br>
+          <span class="keyword">V1.3.0</span>：Service(300行) → CallStateMachine(150行) + NodeFinder(250行) + OverlayController(100行)<br>
+          <span class="keyword">可测试性</span>：CallStateMachine 零 Android 依赖，可直接 JUnit 测试状态转换
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.2.0 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.2.0_Alis</span>
+      <span class="version-date">2026-07-30</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">微信升级检测：校准完成时记录微信版本号，后续微信更新后点击快捷方式会自动拦截并提示「微信已升级，建议重新校准」，不再等拨号失败才发现</li>
+        <li class="new">并发保护：呼叫流程运行中再次点击快捷方式会被拒绝（日志提示），杜绝快速连点导致状态错乱</li>
+        <li class="new">关于页内嵌版本更新日志：最近 3 个版本的更新摘要直接显示在 App 内，无需翻外部文档</li>
+        <li class="new">关于页显示当前微信版本号，方便排查适配问题</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">Release 构建开启 R8 混淆 + 资源压缩（isMinifyEnabled=true, isShrinkResources=true），包体更小、代码不易反编译</li>
+        <li class="opt">compileSdk / targetSdk 升级至 35（Android 15），适配最新前台服务与无障碍政策</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatVersionDetector.kt</span>(新) → <code>getVersion()</code> / <code>saveCalibratedVersion()</code> / <code>isUpgraded()</code> / <code>getUpgradeWarning()</code><br>
+          <span class="file">CallBridgeActivity.kt</span> → 步骤 2.5 微信版本校验，升级后拦截并跳转校准页<br>
+          <span class="file">CalibrationOverlayService.kt</span> → <code>finishCalibration()</code> 中调用 <code>saveCalibratedVersion()</code><br>
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>startCall()</code> 增加 state != IDLE 互斥守卫 + <code>isCallRunning()</code><br>
+          <span class="file">AboutScreen.kt</span> → 新增 ChangelogCard 组件 + 微信版本显示<br>
+          <span class="keyword">build.gradle.kts</span> → compileSdk=35, targetSdk=35, R8 开启, versionCode=11, versionName="1.2.0_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.1.0 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.1.0_Alis <span class="badge major">重大更新</span></span>
+      <span class="version-date">2026-07-30</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">呼叫中断：悬浮窗进度条右侧新增红色「取消」按钮（48dp 大触摸区域），呼叫流程中任何时候均可一键中止，不再只能等超时</li>
+        <li class="new">校准引导栏可拖动：引导悬浮窗支持手指上下拖动移位，步骤 9 不再遮挡微信搜索按钮</li>
+        <li class="new">开机自启默认开启：老人无需手动设置，安装即保活，最无脑最稳定方案</li>
+      </ul>
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">关闭自动拨打后只到聊天界面：现在正确走完 +号→视频通话图标→停在「视频通话/语音通话」二级选择菜单，由用户手动点最后一下</li>
+        <li class="fix">桌面快捷方式开关不同步：部分国产 ROM 不发送固定回调，改为请求成功即乐观标记已固定，开关状态立即反映真实情况</li>
+        <li class="fix">校准偶数步骤底部提示模糊：每个标记步骤的底部提示栏现在明确写出具体按钮名称（如「请点击+号按钮的位置」「请点击搜索按钮的位置」）</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">悬浮窗去掉 FLAG_NOT_TOUCHABLE，取消按钮可正常点击交互</li>
+        <li class="opt">cancelCall() 暴露为 companion 静态方法，外部（如通知栏）也可触发取消</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → 新增 <code>cancelCall()</code> 静态方法 + 悬浮窗取消按钮 + 移除 FLAG_NOT_TOUCHABLE<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → autoDial 检查从 <code>tryClickVideoCall()</code> 移至 <code>tryClickVideoConfirm()</code>，关闭时停在二级菜单<br>
+          <span class="file">CalibrationOverlayService.kt</span> → 引导栏增加 OnTouchListener 拖动逻辑 + <code>showTapMarkLayer(hint)</code> 参数化底部提示<br>
+          <span class="file">AutostartPrefs.kt</span> → 默认值 false → true<br>
+          <span class="file">ContactListViewModel.kt</span> → <code>toggleShortcut()</code> 改为乐观更新 markPinned(true)<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=10, versionName="1.1.0_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.9 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.0.9_Alis</span>
+      <span class="version-date">2026-07-30</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">微信搜索结果误点公众号（误拨 / 误跳转隐患）：搜索结果点击改为「联系人分组内匹配 + 公众号行级负向过滤 + 落点校验」三重防护，仅点真实联系人；点完若落到公众号主页立即中止并提示「未进入聊天，已中止，未误拨」，绝不误拨</li>
+        <li class="fix">搜索匹配误命中：pickBestMatch 去掉 contains 兜底，仅接受精确相等 / startsWith（长度≤目标+1），避免"儿子的小卖部"命中"儿子"</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">校准流程 8 步扩展至 10 步，新增「搜索结果行」取点（⑨引导 / ⑩标记），作为微信改版识别失败时的安全兜底</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → 新增 <code>filterContactCandidates()</code> / <code>findContactsSectionBounds()</code> / <code>CallState.VERIFYING_LANDING</code> 落点校验 / <code>onSearchResultFailed()</code> 兜底<br>
+          <span class="file">WeChatConstants.kt</span> → 新增联系人/非联系人分组标题与过滤关键词常量<br>
+          <span class="file">PositionConfig.kt</span> → 新增搜索结果行归一化坐标 <code>getSearchResultCoord()</code> / <code>saveSearchResultCoord()</code><br>
+          <span class="file">CalibrationOverlayService.kt</span> → 校准 8→10 步（⑨GUIDE_SEARCH_RESULT / ⑩MARK_SEARCH_RESULT）<br>
+          <span class="file">PositionConfigTest.kt</span>(新) → 搜索结果坐标 round-trip 与空值单测<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=9, versionName="1.0.9_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.8 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.0.8_Alis</span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">锁定竖屏：App 永久禁止横屏（MainActivity / CallBridgeActivity 设 screenOrientation=portrait），老人握持旋转也不会变横</li>
+      </ul>
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">B10 呼叫桥校验：CallBridgeActivity 校验 Intent action 且目标联系人必须在数据库中真实存在，非法调用（伪造快捷方式）直接拒绝，杜绝误拨</li>
+        <li class="fix">B14 移除 Room 破坏性迁移：升级时不再静默清空联系人，改用显式 Migration</li>
+        <li class="fix">B18 开机自启加用户开关：BootReceiver 仅当用户在保活页开启「开机自启」才拉起保活服务，不再无条件自启</li>
+        <li class="fix">B19 修正电池优化语义：字段 batteryOptimized → batteryExempt（true=已豁免），保活页原"恒为已开启"的假进度项改为真实检测</li>
+        <li class="fix">B3 微信控件 id 跨语义误匹配：移除被复用的 ks id 作加号，节点匹配改精确相等 + 类型校验，避免误点</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">B21 校准坐标归一化：按钮位置改存屏幕归一化坐标(0..1)，换机型/分辨率/缩放后点击仍精准，旧绝对坐标自动迁移</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">AndroidManifest.xml</span> → 两 Activity 加 <code>screenOrientation="portrait"</code> + <code>configChanges</code><br>
+          <span class="file">CallBridgeActivity.kt</span> / <span class="file">ContactDao.kt</span> / <span class="file">ContactRepository.kt</span> → action 校验 + 联系人存在性查询<br>
+          <span class="file">DatabaseModule.kt</span> / <span class="file">ContactDatabase.kt</span> → 移除 <code>fallbackToDestructiveMigration()</code>，改用 <code>addMigrations()</code><br>
+          <span class="file">AutostartPrefs.kt</span>(新) / <span class="file">BootReceiver.kt</span> / <span class="file">KeepAliveViewModel.kt</span> / <span class="file">KeepAliveScreen.kt</span> → 开机自启开关<br>
+          <span class="file">KeepAliveStatus.kt</span> / <span class="file">PermissionUtils.kt</span> → batteryExempt 语义 + 真实检测<br>
+          <span class="file">WeChatConstants.kt</span> / <span class="file">WeChatAccessibilityService.kt</span> → id 精确匹配 + ImageView 校验<br>
+          <span class="file">PositionConfig.kt</span> → 归一化坐标存储与还原<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=8, versionName="1.0.8_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.7 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.0.7_Alis</span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">桌面快捷方式图标重做：圆形渐变底 + 名字<b>最后一个字</b>（同姓可区分：张大明/张小花 → 明/花）+ 右下角绿色视频通话徽标，192px 高清全幅显示</li>
+        <li class="new">App 内联系人头像同步改为显示名字最后一个字（新增共享 avatarChar 工具，默认尾字）</li>
+      </ul>
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">微信已在前台时点击快捷方式呼叫不启动（无障碍服务改为主动 beginCallFlow() 触发，不再被动等窗口事件）</li>
+        <li class="fix">搜索结果不匹配时盲拨"列表第一项"导致拨错人的安全隐患（改为只点名字真正匹配的候选，找不到则安全失败）</li>
+        <li class="fix">快捷方式"已固定"状态与系统不同步（改用系统回调 ShortcutResultReceiver，用户真正把图标放到桌面后才标记，取消放置不再误标）</li>
+        <li class="fix">无障碍节点从不回收导致的内存泄漏（全链路补充 recycle()）</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">移除敏感权限 QUERY_ALL_PACKAGES，改用 &lt;queries&gt; 声明微信包，提升上架合规</li>
+        <li class="opt">联系人页新增"共 N 位家人"结构标题，空状态改为带图标的友好引导</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">ShortcutHelper.kt</span> → <code>createAvatarIcon()</code> 重写：尾字 + 绿色视频徽标<br>
+          <span class="file">AvatarView.kt</span> / <span class="file">AvatarChar.kt</span>(新) → 共享尾字工具，默认尾字<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → companion instance + <code>beginCallFlow()</code> 主动启动；<code>tryClickSearchResult()</code> 移除盲点<br>
+          <span class="file">ShortcutResultReceiver.kt</span>(新) + <span class="file">AndroidManifest.xml</span> → 系统回调同步固定状态<br>
+          <span class="file">ContactListViewModel.kt</span> → <code>onCleared()</code> 释放静态回调<br>
+          <span class="file">AndroidManifest.xml</span> → 移除 QUERY_ALL_PACKAGES，新增 &lt;queries&gt; 与 ShortcutResultReceiver 注册<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=7, versionName="1.0.7_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.6 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.0.6_Alis</span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">紧凑型联系人卡片：头像从 64dp 缩小至 40dp，单卡高度降低约 60%，同屏可见数量翻倍</li>
+        <li class="new">加宽视频通话和编辑按钮：视频按钮保留图标+文字，编辑按钮带图标+文字，确保老人易触控</li>
+        <li class="new">保活设置页新增「桌面快捷方式权限」检测项（第 6 项），引导用户授予创建桌面图标权限</li>
+        <li class="new">版本更新文档：完整记录从 V1.0.1 到 V1.0.6 的功能变更与技术路径</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">联系人列表间距从 12dp 优化为 8dp，侧边距从 16dp 优化为 12dp</li>
+        <li class="opt">快捷方式开关缩小至 0.8 倍比例，节省横向空间</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="keyword">KeepAliveStatus</span> 新增 <code>shortcutPermissionGranted</code> 字段，<span class="keyword">totalCount</span> 从 5 升至 6<br>
+          <span class="file">PermissionUtils.kt</span> → 新增 <code>isShortcutSupported()</code> 调用 <span class="keyword">ShortcutManagerCompat.isRequestPinShortcutSupported()</span><br>
+          <span class="file">ContactListScreen.kt</span> → 重写 <code>ContactCard</code> 为双行紧凑布局（Row + Row）<br>
+          <span class="file">KeepAliveScreen.kt</span> → <code>buildSettingItems()</code> 新增第 6 项 AppShortcut 图标<br>
+          <span class="file">build.gradle.kts</span> → versionCode=6, versionName="1.0.6_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.5 -->
+  <div class="version-card">
+    <div class="version-header left-border-pink">
+      <span class="version-tag">V1.0.5_Alis <span class="badge major">重大更新</span></span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">自动拨打开关：控制是否执行最后一步视频拨打，关闭后停在聊天界面供手动操作</li>
+        <li class="new">校准步骤从 6 步扩展至 8 步，新增三级菜单（视频通话→选择菜单→视频通话选项）校准</li>
+        <li class="new">明确偶数步骤提示文案，如「请点击屏幕上"+"号按钮的位置（聊天页右下角的加号按钮）」</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">PositionConfig.kt</span> → 新增 <code>KEY_AUTO_DIAL</code>、<code>KEY_VIDEO_CONFIRM_X/Y</code>，<code>isAutoDialEnabled()</code> / <code>getVideoConfirmButton()</code><br>
+          <span class="file">WeChatAccessibilityService.kt</span> → 新增 <span class="keyword">CLICKING_VIDEO_CONFIRM</span> 状态，<code>tryClickVideoConfirm()</code> 方法<br>
+          <span class="file">CalibrationOverlayService.kt</span> → <span class="keyword">CalStep</span> 枚举从 6 项扩展至 8 项<br>
+          <span class="file">CalibrationScreen.kt</span> → 新增 <code>AutoDialCard</code> 开关组件<br>
+          <span class="keyword">状态机流程</span>：IDLE → SEARCHING → CLICKING_CONTACT → CLICKING_PLUS → CLICKING_VIDEO → CLICKING_VIDEO_CONFIRM → DONE
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.4 -->
+  <div class="version-card">
+    <div class="version-header left-border-teal">
+      <span class="version-tag">V1.0.4_Alis <span class="badge fix">精度修复</span></span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">校准精度问题：用 TapMarkView 替换 CrosshairView，支持直接点击屏幕标记位置</li>
+        <li class="fix">悬浮窗遮挡问题：分离引导层和标记层，标记时隐藏引导条防止遮挡</li>
+        <li class="fix">悬浮窗透明孔：在点击位置开透明区域，确保能看到实际微信按钮</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">TapMarkView.kt</span> → 新组件，使用 <code>MotionEvent.getRawX()/getRawY()</code> 获取屏幕绝对坐标<br>
+          <span class="file">CalibrationOverlayService.kt</span> → 重写为双图层架构：<span class="keyword">引导层</span>（顶部引导条）+ <span class="keyword">标记层</span>（全屏触摸）<br>
+          <span class="keyword">WindowManager</span> → 两个独立 View 添加到 WindowManager，标记时引导层 <code>visibility = GONE</code><br>
+          <span class="keyword">坐标精度</span>：从拖拽准星改为直接点击，消除准星偏移误差
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.3 -->
+  <div class="version-card">
+    <div class="version-header left-border-orange">
+      <span class="version-tag">V1.0.3_Alis <span class="badge fix">核心修复</span></span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">状态机卡死：每次新呼叫时完整重置状态机（resetState），清除所有标志位和定时器</li>
+        <li class="fix">无主动触发：进入 SEARCHING_CONTACT 状态后延迟执行 trySearchContact()，不依赖事件触发</li>
+        <li class="fix">缺少步骤提示：每步操作显示 Toast 通知（"正在打开搜索…"、"正在搜索: [联系人]"等）</li>
+        <li class="fix">步骤验证：状态转换前检查 UI 是否已就绪，避免过早跳转</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → 新增 <code>resetState()</code> 方法，<code>onAccessibilityEvent()</code> 中检测 pendingCall && IDLE 时触发重置<br>
+          <span class="keyword">定时器机制</span>：<code>Handler.postDelayed()</code> 延迟 500ms 执行 <code>trySearchContact()</code><br>
+          <span class="keyword">超时检查</span>：周期性 <code>TimeoutChecker</code> 确保流程不卡死<br>
+          <span class="keyword">Toast 进度</span>：7 步 Toast 通知（准备微信→打开搜索→搜索联系人→进入聊天→点击+→点击视频→已发起）
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.2 -->
+  <div class="version-card">
+    <div class="version-header left-border-blue">
+      <span class="version-tag">V1.0.2_Alis <span class="badge major">重大更新</span></span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 新功能</div>
+      <ul class="feature-list">
+        <li class="new">手动按键位置校准系统：CrosshairView 可拖动准星标记微信按钮位置</li>
+        <li class="new">校准悬浮窗服务：CalibrationOverlayService 通过 WindowManager 显示引导界面</li>
+        <li class="new">坐标持久化：PositionConfig 使用 SharedPreferences 存储校准坐标</li>
+        <li class="new">6 步校准流程：搜索按钮 → +号按钮 → 视频通话按钮等</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">PositionConfig.kt</span> → <span class="keyword">SharedPreferences</span> 存储 x/y 坐标对，<code>isCalibrated()</code> 校验完整性<br>
+          <span class="file">CrosshairView.kt</span> → 自定义 View，<code>onTouchEvent()</code> 拖拽准星，<code>onDraw()</code> 绘制十字线<br>
+          <span class="file">CalibrationOverlayService.kt</span> → <span class="keyword">SYSTEM_ALERT_WINDOW</span> 权限，<span class="keyword">WindowManager.addView()</span> 添加悬浮窗<br>
+          <span class="file">CalibrationScreen.kt</span> → Compose UI 校准引导页，检查悬浮窗权限和无障碍服务<br>
+          <span class="keyword">dispatchGesture</span> → AccessibilityService <code>dispatchGesture()</code> 模拟点击坐标
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.0.1 -->
+  <div class="version-card">
+    <div class="version-header left-border-green">
+      <span class="version-tag">V1.0.1_Alis <span class="badge major">初始版本</span></span>
+      <span class="version-date">2026-07-29</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">✨ 核心功能</div>
+      <ul class="feature-list">
+        <li class="new">AccessibilityService 自动化拨号：模拟点击微信搜索→联系人→聊天→+号→视频通话</li>
+        <li class="new">Pinned Shortcut 桌面快捷方式：每个联系人一个桌面图标，点击即拨</li>
+        <li class="new">Room 数据库存储联系人：姓名、微信备注、wxid、头像颜色索引、快捷方式状态</li>
+        <li class="new">CallBridgeActivity 中转：接收快捷方式 Intent，启动无障碍服务拨号流程</li>
+        <li class="new">保活设置页：5 项权限检测（无障碍、开机自启、电池优化、通知、后台运行）</li>
+        <li class="new">前台服务保活：KeepAliveService 常驻通知 + START_STICKY</li>
+        <li class="new">开机自启：BootReceiver 监听 BOOT_COMPLETED 自动拉起保活服务</li>
+      </ul>
+      <div class="section-title">⚠️ 已知问题</div>
+      <ul class="feature-list">
+        <li>WeChat Deep Link（weixin://dl/chat?user=wxid）在微信 8.0.76+ 失效，改为直接拉起微信主界面</li>
+        <li>自动检测按钮位置不准确（不同机型/微信版本坐标不同），后续版本改为手动校准</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术架构</div>
+        <div class="tech-path-content">
+          <span class="keyword">技术栈</span>：Kotlin + Jetpack Compose + Hilt + Room + Navigation Compose<br>
+          <span class="keyword">无障碍服务</span>：<span class="file">WeChatAccessibilityService.kt</span> 继承 <code>AccessibilityService</code>，监听 <code>TYPE_WINDOW_STATE_CHANGED</code><br>
+          <span class="keyword">快捷方式</span>：<span class="file">ShortcutHelper.kt</span> 使用 <code>ShortcutManagerCompat.requestPinShortcut()</code><br>
+          <span class="keyword">中转 Activity</span>：<span class="file">CallBridgeActivity.kt</span> 透明 Activity，Action=<code>com.elder.wechatvideo.CALL_WECHAT</code><br>
+          <span class="keyword">保活</span>：<span class="file">KeepAliveService.kt</span> 前台服务 + <code>FOREGROUND_SERVICE_TYPE_SPECIAL_USE</code><br>
+          <span class="keyword">数据</span>：<span class="file">ContactEntity.kt</span> Room Entity，<span class="file">ContactDao</span> CRUD 操作<br>
+          <span class="keyword">编译</span>：minSdk=26, targetSdk=34, compileSdk=34, Java 17
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+# ============ Android / Gradle ============
+*.iml
+.gradle/
+.kotlin/
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# 本机 SDK 路径（机器相关，不入库）
+local.properties
+
+# ============ IDE / OS ============
+.idea/
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# ============ 工具 / Agent 目录（非源码） ============
+.ghome/
+.qoder/
+.workbuddy/
+UI设计预览/.workbuddy/
+
+# ============ 发布产物 / 大文件 ============
+*.zip
+一键视频_*/
+
+# ============ 本地设计预览（已整理进 docs/design/） ============
+test_ui_compact_contacts.html
+ui_optimized_preview.html
+ui_reference.html
+ui_reference_v2.html
+UI设计预览/
+# 根目录版本文档仅保留 docs/ 下那份，排除根目录同名文件
+/版本更新文档.html

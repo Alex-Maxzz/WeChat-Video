@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>一键视频 · 架构界面预览（v2 设计语言）</title>
+<style>
+/* ============================================================
+   设计语言取自 设计系统预览v2.html —— Material3 深色优先
+   主色 #9B8CFF / secondary #10B59A / tertiary #FFB4A2 / 8 色头像
+   ============================================================ */
+.app[data-theme="dark"]{
+  --bg:#0F0E1A; --surface:#16151F; --surface-container:#1C1B27;
+  --surface-variant:#252238; --on-surface:#E8E6F5; --on-surface-variant:#A0A0BC;
+  --primary:#9B8CFF; --on-primary:#0F0E1A; --primary-container:#3A2F6B; --on-primary-container:#E8E4FF;
+  --secondary:#10B59A; --on-secondary:#00201A; --secondary-container:#00382E; --on-secondary-container:#A0F0D8;
+  --tertiary:#FFB4A2; --outline:#5F5E5A; --outline-variant:#3A3940;
+  --shadow-card:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  --shadow-fab:0 10px 22px -8px rgba(155,140,255,.5);
+  --hairline:rgba(255,255,255,.06);
+}
+.app[data-theme="light"]{
+  --bg:#FBFAFF; --surface:#FFFFFF; --surface-container:#F3F1FA;
+  --surface-variant:#E7E1F2; --on-surface:#1B1B22; --on-surface-variant:#49454F;
+  --primary:#9B8CFF; --on-primary:#0F0E1A; --primary-container:#E8E4FF; --on-primary-container:#2A1F55;
+  --secondary:#0E9C84; --on-secondary:#FFFFFF; --secondary-container:#A0F0D8; --on-secondary-container:#00382E;
+  --tertiary:#D85A45; --outline:#CAC4D0; --outline-variant:#E7E1F2;
+  --shadow-card:0 1px 2px rgba(20,18,40,.06), 0 14px 32px -22px rgba(60,40,120,.35);
+  --shadow-fab:0 12px 24px -10px rgba(120,100,255,.55);
+  --hairline:rgba(20,18,40,.07);
+}
+/* 头像 8 色渐变（v2 设计语言） */
+.av0{background:linear-gradient(135deg,#7C6BFF,#A78BFA)}
+.av1{background:linear-gradient(135deg,#0EA5E9,#38BDF8)}
+.av2{background:linear-gradient(135deg,#10B59A,#34D399)}
+.av3{background:linear-gradient(135deg,#F59E0B,#FBBF24)}
+.av4{background:linear-gradient(135deg,#EC4899,#F472B6)}
+.av5{background:linear-gradient(135deg,#8B5CF6,#C4B5FD)}
+.av6{background:linear-gradient(135deg,#EF4444,#F87171)}
+.av7{background:linear-gradient(135deg,#14B8A6,#5EEAD4)}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(900px 600px at 8% -8%, rgba(155,140,255,.16), transparent 55%),
+    radial-gradient(820px 560px at 98% 110%, rgba(16,181,154,.12), transparent 55%);
+  color:#E8E6F5; padding:0; line-height:1.5; -webkit-font-smoothing:antialiased; min-height:100vh;
+}
+body{background-color:#0b0a14}
+.app{transition:background-color .3s ease}
+
+/* ===================== 顶部控制台 ===================== */
+.console{max-width:1180px; margin:0 auto; padding:30px 22px 10px}
+.ctitle{font-size:25px; font-weight:700; letter-spacing:.3px; margin:0 0 6px; color:#fff}
+.clede{font-size:14px; color:#9b97b8; margin:0 0 18px; max-width:820px}
+.pill{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; padding:6px 13px; border-radius:999px;
+  background:rgba(16,181,154,.12); border:1px solid rgba(16,181,154,.35); color:#5fe3c9}
+.controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:14px 0 8px}
+.seg{display:inline-flex; background:rgba(255,255,255,.05); border:1px solid var(--hairline); border-radius:14px; padding:4px; gap:2px}
+.seg button{border:none; background:transparent; color:#b9b4d6; font-size:13px; font-weight:600; padding:8px 15px; border-radius:10px; cursor:pointer; transition:.18s; font-family:inherit}
+.seg button.on{background:linear-gradient(135deg,#9B8CFF,#7C6BFF); color:#0F0E1A; box-shadow:0 6px 14px -7px rgba(155,140,255,.9)}
+.seg.ghost button.on{background:rgba(16,181,154,.18); color:#5fe3c9}
+.tbtn{margin-left:auto; border:1px solid var(--hairline); background:rgba(255,255,255,.05); color:#e8e6f5; font-size:13px; font-weight:600;
+  padding:9px 16px; border-radius:12px; cursor:pointer; font-family:inherit; transition:.18s}
+.tbtn:hover{border-color:rgba(155,140,255,.5)}
+.clabel{font-size:12px; color:#8a86a8; font-weight:600; margin-right:2px}
+
+/* ===================== 布局 ===================== */
+.board{display:flex; justify-content:center; padding:14px 22px 30px; align-items:flex-start}
+
+/* ===================== 手机外壳 ===================== */
+.phone{width:440px; margin:0 auto; background:#06060c; border-radius:52px; padding:12px;
+  box-shadow:0 50px 90px -34px rgba(0,0,0,.75), inset 0 0 0 2px rgba(255,255,255,.05)}
+.scr{height:780px; border-radius:42px; overflow:hidden; position:relative; display:flex; flex-direction:column;
+  background:var(--bg); transition:background-color .3s ease; container-type:inline-size}
+.notch{position:absolute; top:11px; left:50%; transform:translateX(-50%); width:96px; height:24px; background:#06060c; border-radius:999px; z-index:40}
+.stbar{height:60px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 30px 9px;
+  font-size:13px; font-weight:600; color:var(--on-surface); z-index:20}
+.stbar .sig{display:flex; align-items:flex-end; gap:3px; height:13px}
+.stbar .sig i{width:4px; background:var(--on-surface); border-radius:1px; display:block; opacity:.85}
+.stbar .sig i:nth-child(1){height:7px}.stbar .sig i:nth-child(2){height:10px}.stbar .sig i:nth-child(3){height:13px}.stbar .sig i:nth-child(4){height:16px}
+.bat{width:22px; height:11px; border:1.5px solid var(--on-surface); border-radius:3px; position:relative; opacity:.85}
+.bat::after{content:""; position:absolute; right:-3px; top:3px; width:2px; height:5px; background:var(--on-surface); border-radius:1px}
+.bat::before{content:""; position:absolute; left:1.5px; top:1.5px; bottom:1.5px; width:13px; background:var(--on-surface); border-radius:1px}
+
+/* ====== 屏幕通用 ====== */
+.screen{display:none; flex:1; flex-direction:column; min-height:0; animation:screenIn .26s cubic-bezier(.4,0,.2,1)}
+.screen.active{display:flex}
+@keyframes screenIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+/* ====== TopAppBar ====== */
+.appbar{padding:14px 18px 14px; background:transparent; display:flex; align-items:center; gap:8px; color:var(--on-surface); position:relative; z-index:10}
+.appbar .ttl{font-size:22px; font-weight:500; letter-spacing:.2px}
+.appbar .grow{flex:1}
+.iconbtn{border:none; background:transparent; color:var(--on-surface); width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s}
+.iconbtn:hover{background:var(--hairline)}
+.iconbtn:active{transform:scale(.92)}
+
+/* ====== 联系人列表 ====== */
+.scroll{flex:1; overflow-y:auto; padding:4px 16px 88px; scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:5px}
+.scroll::-webkit-scrollbar-thumb{background:var(--outline-variant); border-radius:9px}
+.listhead{font-size:13px; color:var(--on-surface-variant); padding:6px 4px 10px; font-weight:600}
+.contact{background:var(--surface); border:1px solid var(--outline-variant); border-radius:18px; padding:12px 16px;
+  margin-bottom:10px; box-shadow:var(--shadow-card); display:flex; align-items:center; gap:10px;
+  animation:itemIn .22s cubic-bezier(.4,0,.2,1) both}
+@keyframes itemIn{from{opacity:0; transform:scale(.96)} to{opacity:1; transform:scale(1)}}
+.ava{width:48px; height:48px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:600; font-size:20px; box-shadow:0 6px 14px -6px rgba(0,0,0,.5); user-select:none}
+.meta{flex:1; min-width:0}
+.mname{font-size:18px; font-weight:600; color:var(--on-surface); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.mrem{font-size:13px; font-weight:400; color:var(--on-surface-variant); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.trailing{display:flex; align-items:center; gap:10px; flex:none}
+.callbtn{border:none; border-radius:20px; height:40px; padding:0 16px; font-size:16px; font-weight:500; color:var(--on-primary);
+  background:var(--primary); display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow:0 8px 18px -10px rgba(155,140,255,.8);
+  transition:transform .12s ease, filter .15s ease; font-family:inherit; white-space:nowrap; flex:none}
+.callbtn svg{width:18px; height:18px; flex:none}
+.callbtn:hover{filter:brightness(1.06)}
+.callbtn:active{transform:scale(.96)}
+.contact .iconbtn{flex:none; width:40px; height:40px}
+
+/* ====== Switch ====== */
+.sw{width:46px; height:28px; border-radius:14px; background:var(--outline); position:relative; cursor:pointer; transition:background .12s ease; flex:none; border:none; padding:0}
+.sw .knob{position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.35); transition:left .12s ease}
+.sw.on{background:var(--secondary)}
+.sw.on .knob{left:21px}
+
+/* ====== FAB ====== */
+.fab{position:absolute; right:18px; bottom:78px; width:56px; height:56px; border-radius:16px; border:none; cursor:pointer;
+  background:var(--primary-container); color:var(--on-primary-container); display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-fab); z-index:25; transition:transform .15s ease, box-shadow .2s ease}
+.fab svg{width:26px; height:26px}
+.fab:hover{transform:translateY(-2px); box-shadow:0 16px 30px -10px rgba(155,140,255,.7)}
+.fab:active{transform:scale(.95)}
+
+/* ====== NavigationBar（3 Tab） ====== */
+.nav{display:flex; background:var(--surface); border-top:1px solid var(--outline-variant); margin-top:auto; padding:8px 6px 12px; gap:4px; z-index:20}
+.nav .tab{flex:1; text-align:center; font-size:12px; font-weight:500; padding:6px 0 4px; color:var(--on-surface-variant); cursor:pointer; border-radius:14px; transition:.15s; letter-spacing:.3px}
+.nav .tab.on{color:var(--primary); background:var(--hairline)}
+.nav .tab.on svg{stroke:var(--primary)}
+.nav svg{width:22px; height:22px; display:block; margin:0 auto 3px; stroke:var(--on-surface-variant); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+/* ====== 空态 / 加载态 ====== */
+.empty{flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:0 30px; text-align:center; color:var(--on-surface-variant)}
+.empty.show{display:flex}
+.empty .eico{width:84px; height:84px; border-radius:28px; background:var(--surface-container); display:flex; align-items:center; justify-content:center; color:var(--primary)}
+.empty .eico svg{width:40px; height:40px; stroke:var(--primary); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.empty .etxt{font-size:16px; color:var(--on-surface-variant); font-weight:400}
+.empty .etxt b{color:var(--on-surface); font-weight:600}
+.loading{flex:1; display:none; align-items:center; justify-content:center}
+.loading.show{display:flex}
+.spin{width:42px; height:42px; border-radius:50%; border:4px solid var(--surface-variant); border-top-color:var(--primary); animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ====== 删除确认 Dialog ====== */
+.dlg-mask{position:absolute; inset:0; background:rgba(6,6,12,.55); display:none; align-items:center; justify-content:center; z-index:50; padding:30px}
+.dlg-mask.show{display:flex; animation:screenIn .2s ease}
+.dialog{background:var(--surface-container); border-radius:24px; padding:24px; width:100%; max-width:300px; box-shadow:0 30px 60px -20px rgba(0,0,0,.8); border:1px solid var(--outline-variant)}
+.dialog h3{margin:0 0 10px; font-size:18px; font-weight:600; color:var(--on-surface)}
+.dialog p{margin:0 0 22px; font-size:14px; color:var(--on-surface-variant); line-height:1.6}
+.dialog .acts{display:flex; justify-content:flex-end; gap:8px}
+.dlg-btn{border:none; background:transparent; font-size:14px; font-weight:600; padding:10px 18px; border-radius:999px; cursor:pointer; font-family:inherit; transition:.15s}
+.dlg-btn.txt{color:var(--on-surface-variant)}
+.dlg-btn.txt:hover{background:var(--hairline)}
+.dlg-btn.danger{background:var(--tertiary); color:#3a1410}
+.dlg-btn.danger:hover{filter:brightness(1.05)}
+
+/* ====== 添加/编辑页 ====== */
+.form{flex:1; overflow-y:auto; padding:6px 20px 90px}
+.field{margin-bottom:18px}
+.field label{display:block; font-size:14px; font-weight:500; color:var(--on-surface-variant); margin-bottom:8px}
+.finput{width:100%; height:52px; border-radius:14px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--on-surface);
+  font-size:16px; padding:0 16px; font-family:inherit; transition:.15s}
+.finput:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(155,140,255,.18)}
+.finput::placeholder{color:var(--on-surface-variant); opacity:.6}
+.colorsel{display:flex; gap:12px; flex-wrap:wrap; margin-top:4px}
+.swatch{width:40px; height:40px; border-radius:50%; cursor:pointer; position:relative; border:3px solid transparent; transition:.15s}
+.swatch.sel{border-color:var(--on-surface); transform:scale(1.05)}
+.swatch.sel::after{content:""; position:absolute; inset:0; border-radius:50%; box-shadow:0 0 0 2px var(--bg)}
+.savebar{position:absolute; left:0; right:0; bottom:0; padding:12px 18px calc(12px + env(safe-area-inset-bottom)); background:var(--bg)}
+.savebtn{width:100%; height:56px; border:none; border-radius:16px; background:var(--primary); color:var(--on-primary);
+  font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; box-shadow:0 10px 22px -10px rgba(155,140,255,.7); transition:transform .12s}
+.savebtn:active{transform:scale(.98)}
+.delbtn{width:100%; height:52px; border:none; border-radius:16px; background:transparent; color:var(--tertiary);
+  font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; margin-top:10px; border:1.5px solid var(--tertiary)}
+
+/* ====== 保活设置 ====== */
+.ksum{background:linear-gradient(135deg,var(--primary-container),var(--surface-variant)); border:1px solid var(--outline-variant); border-radius:18px; padding:18px 20px; margin-bottom:14px; display:flex; align-items:center; gap:16px}
+.ksum .ring{width:58px; height:58px; border-radius:50%; flex:none; background:conic-gradient(var(--secondary) 67%, var(--outline-variant) 0); display:flex; align-items:center; justify-content:center}
+.ksum .ring i{width:46px; height:46px; border-radius:50%; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--on-surface); font-style:normal}
+.ksum .kinfo{flex:1; min-width:0}
+.ksum .kt{font-size:16px; font-weight:600; color:var(--on-surface)}
+.ksum .ks{font-size:13px; color:var(--on-surface-variant); margin-top:3px; line-height:1.4}
+.ksum .kpct{font-size:22px; font-weight:700; color:var(--secondary); flex:none}
+.ksub{font-size:14px; color:var(--on-surface-variant); margin:2px 4px 12px}
+.kgroup{font-size:12px; font-weight:700; letter-spacing:.5px; color:var(--on-surface-variant); margin:8px 4px 10px}
+.krow{display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--surface); border:1px solid var(--outline-variant); border-radius:16px; margin-bottom:10px; box-shadow:var(--shadow-card); transition:border-color .15s, transform .15s}
+.krow:hover{border-color:var(--primary)}
+.kico{width:44px; height:44px; border-radius:13px; flex:none; display:flex; align-items:center; justify-content:center; background:rgba(155,140,255,.16); color:var(--primary)}
+.kico svg{width:22px; height:22px; stroke:var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.kmeta{flex:1; min-width:0}
+.kt{font-size:16px; font-weight:600; color:var(--on-surface)}
+.kstat{font-size:13px; margin-top:3px; font-weight:500}
+.kstat.on{color:#5fe3c9}
+.kstat.off{color:#ffb4a2}
+.kgo{border:1px solid var(--outline); background:transparent; color:var(--on-surface); font-size:13px; font-weight:600; padding:9px 14px; border-radius:12px; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; flex:none}
+.kgo:hover{border-color:var(--primary); color:var(--primary)}
+.calib{background:linear-gradient(135deg,var(--primary),#7C6BFF); border-radius:16px; padding:18px 20px; margin-top:8px; display:flex; align-items:center; gap:14px; cursor:pointer; box-shadow:0 16px 32px -16px rgba(155,140,255,.65)}
+.calib .cico{width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; color:#fff; flex:none}
+.calib .cico svg{width:24px; height:24px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.calib .ctxt{flex:1}
+.calib .ct{font-size:16px; font-weight:700; color:#fff}
+.calib .cs{font-size:13px; color:rgba(255,255,255,.85); margin-top:3px}
+.calib .carrow{color:#fff; flex:none; display:flex}
+.calib:hover{filter:brightness(1.04)}
+
+/* ====== 按键位置校准 ====== */
+.status-card{display:flex; align-items:center; gap:14px; padding:18px 20px; border-radius:18px; margin:4px 0 16px}
+.status-card.ok{background:rgba(16,181,154,.12); color:#5fe3c9}
+.status-card.off{background:rgba(255,180,162,.12); color:#ffb4a2}
+.status-card svg{width:34px; height:34px; flex:none}
+.status-card .st{font-size:18px; font-weight:800}
+.autodial{display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--outline-variant); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow-card)}
+.autodial .ad-meta{flex:1}
+.autodial .ad-t{font-size:16px; font-weight:600; color:var(--on-surface)}
+.autodial .ad-s{font-size:13px; color:var(--on-surface-variant); margin-top:3px}
+.secttl{font-size:16px; font-weight:600; color:var(--on-surface); margin:4px 4px 10px}
+.preq{display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--outline-variant); border-radius:16px; padding:14px 16px; margin-bottom:10px; box-shadow:var(--shadow-card)}
+.preq .pb{width:42px; height:42px; border-radius:12px; flex:none; display:flex; align-items:center; justify-content:center}
+.preq .pb svg{width:22px; height:22px}
+.preq .pm{flex:1; min-width:0}
+.preq .pt{font-size:16px; font-weight:600; color:var(--on-surface)}
+.preq .pd{font-size:13px; color:var(--on-surface-variant); margin-top:2px}
+.instr{background:var(--surface-variant); border-radius:16px; padding:16px 18px; margin-top:16px}
+.instr .it{font-size:15px; font-weight:700; color:var(--on-surface)}
+.instr .id{font-size:13px; color:var(--on-surface-variant); margin-top:8px; white-space:pre-line; line-height:1.6}
+
+/* ====== 校准 Overlay（8 步 · v2 风格）====== */
+.calib-overlay{position:absolute; inset:0; background:var(--surface-container); display:none; flex-direction:column; z-index:60; animation:screenIn .25s ease}
+.calib-overlay.show{display:flex}
+.co-top{display:flex; align-items:center; gap:8px; padding:14px 16px; color:var(--on-surface)}
+.co-title{font-size:17px; font-weight:600; flex:1}
+.co-step{font-size:13px; color:var(--on-surface-variant); font-weight:600; font-variant-numeric:tabular-nums}
+.co-progress{height:4px; background:var(--outline-variant); margin:0 16px; border-radius:4px; overflow:hidden}
+.co-bar{height:100%; background:var(--secondary); width:12.5%; transition:width .35s cubic-bezier(.4,0,.2,1)}
+.co-body{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:20px; text-align:center}
+.co-phone{position:relative; width:150px; height:300px; border-radius:30px; background:var(--surface); border:2px solid var(--outline-variant); box-shadow:var(--shadow-card); overflow:hidden; flex:none}
+.co-screen{position:absolute; inset:10px; border-radius:20px; background:linear-gradient(160deg,var(--surface-variant),var(--bg))}
+.co-key{position:absolute; width:32px; height:32px; border-radius:50%; background:var(--primary); color:#0F0E1A; font-size:12px; font-weight:700; cursor:pointer; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; transition:left .35s cubic-bezier(.4,0,.2,1), top .35s cubic-bezier(.4,0,.2,1), background .2s; animation:pulse 1.6s ease-in-out infinite; box-shadow:0 0 0 6px rgba(155,140,255,.3)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(155,140,255,.3)}50%{box-shadow:0 0 0 11px rgba(155,140,255,.12)}}
+.co-body h3{font-size:20px; font-weight:600; color:var(--on-surface); margin:0}
+.co-body p{font-size:14px; color:var(--on-surface-variant); margin:0; max-width:290px; line-height:1.65}
+.co-dots{display:flex; gap:7px; justify-content:center; padding:4px; flex:none}
+.co-dots i{width:8px; height:8px; border-radius:50%; background:var(--outline-variant); transition:.25s}
+.co-dots i.on{background:var(--primary); width:22px; border-radius:4px}
+.co-actions{display:flex; gap:12px; padding:16px 18px calc(16px + env(safe-area-inset-bottom)); flex:none}
+.co-ghost,.co-primary{border:none; border-radius:14px; height:52px; flex:1; font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s}
+.co-ghost{background:var(--surface-variant); color:var(--on-surface)}
+.co-primary{background:var(--primary); color:var(--on-primary)}
+.co-primary:active{transform:scale(.98)}
+
+/* ====== 关于 ====== */
+.about{flex:1; display:flex; flex-direction:column; align-items:center; padding:40px 24px; gap:8px; overflow-y:auto}
+.launcher{width:96px; height:96px; border-radius:24px; position:relative; overflow:hidden; box-shadow:0 22px 40px -16px rgba(0,0,0,.6); margin-bottom:6px}
+.launcher .lb{position:absolute; inset:0; background:linear-gradient(135deg,#9B8CFF,#10B59A)}
+.launcher .lf{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center}
+.about .an{font-size:22px; font-weight:600; color:var(--on-surface)}
+.about .av{font-size:14px; color:var(--on-surface-variant); margin-bottom:18px}
+.about .desc{width:100%; background:var(--surface-variant); border-radius:18px; padding:16px 18px; font-size:14px; color:var(--on-surface); white-space:pre-line; line-height:1.6; margin-bottom:18px}
+.chlog{width:100%; background:var(--surface); border:1px solid var(--outline-variant); border-radius:18px; padding:6px 18px; box-shadow:var(--shadow-card)}
+.clrow{padding:16px 0; border-bottom:1px solid var(--outline-variant)}
+.clrow:last-child{border-bottom:none}
+.clrow .cv{font-size:14px; font-weight:600; color:var(--primary); margin-bottom:4px}
+.clrow .cd{font-size:13px; color:var(--on-surface-variant); line-height:1.6; white-space:pre-line}
+.wxver{font-size:13px; color:var(--on-surface-variant); margin-top:16px}
+
+/* ====== 全界面画廊 ====== */
+.gallery{max-width:1180px; margin:0 auto; padding:10px 22px 60px}
+.gallery h2{font-size:18px; color:#fff; margin:0 0 4px}
+.gallery .gdesc{color:#9b97b8; font-size:13px; margin:0 0 18px}
+.ggrid{display:flex; gap:20px; overflow-x:auto; padding-bottom:14px}
+.thumb{display:flex; flex-direction:column; align-items:center; gap:8px; flex:none}
+.thumb-frame{width:200px; height:392px; border-radius:34px; border:8px solid #06060c; overflow:hidden; position:relative; background:var(--bg); box-shadow:0 20px 40px -22px rgba(0,0,0,.6)}
+.thumb-body{width:440px; height:780px; transform:scale(.418); transform-origin:top left; position:relative}
+.thumb .cap{font-size:13px; font-weight:600; color:#e8e6f5}
+.thumb .cap small{display:block; font-weight:500; color:#9b97b8; font-size:11px}
+</style>
+</head>
+<body>
+<div class="app" data-theme="dark">
+  <div class="console">
+    <h1 class="ctitle">一键视频 · 架构界面预览（v2 设计语言）</h1>
+    <p class="clede">界面与文案严格对齐 <code>app/src</code> 架构（5 屏 + 底部 3 Tab）；视觉语言取自 <b>设计系统预览v2.html</b>（Material3 深色优先、主色 #9B8CFF、8 色头像、珊瑚 tertiary）。未改动项目文件。</p>
+    <span class="pill">⚠ 预览稿 · 独立于项目文件</span>
+
+    <div class="controls">
+      <span class="clabel">屏幕</span>
+      <div class="seg" id="screenSeg">
+        <button data-screen="list" class="on">联系人</button>
+        <button data-screen="edit">添加·编辑</button>
+        <button data-screen="keep">保活设置</button>
+        <button data-screen="calib">按键校准</button>
+        <button data-screen="about">关于</button>
+      </div>
+      <span class="clabel" id="stateLabel">列表状态</span>
+      <div class="seg ghost" id="stateSeg">
+        <button data-state="normal" class="on">正常</button>
+        <button data-state="loading">加载</button>
+        <button data-state="empty">空态</button>
+      </div>
+      <button class="tbtn" id="themeBtn">🌙 深色</button>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="phone"><div class="scr">
+      <div class="notch"></div>
+      <div class="stbar">
+        <span>9:41</span>
+        <span class="sig"><i></i><i></i><i></i><i></i></span>
+        <span class="bat"></span>
+      </div>
+
+      <!-- ===== 联系人列表 ===== -->
+      <section class="screen active" id="scr-list">
+        <div class="appbar">
+          <span class="ttl">家人联系人</span>
+          <span class="grow"></span>
+        </div>
+
+        <div class="scroll" id="listScroll">
+          <div class="listhead">共 4 位家人</div>
+
+          <div class="contact">
+            <div class="ava av0">明</div>
+            <div class="meta"><div class="mname">张大明</div><div class="mrem">大儿子</div></div>
+            <div class="trailing">
+              <button class="callbtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2l4-2.6a1 1 0 0 1 1.5.9V16a1 1 0 0 1-1.5.9L15 14.5V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>一键视频</button>
+              <button class="sw on" aria-label="桌面快捷方式"><span class="knob"></span></button>
+              <button class="iconbtn" data-del="张大明"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            </div>
+          </div>
+
+          <div class="contact">
+            <div class="ava av1">英</div>
+            <div class="meta"><div class="mname">李秀英</div><div class="mrem">亲家母</div></div>
+            <div class="trailing">
+              <button class="callbtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2l4-2.6a1 1 0 0 1 1.5.9V16a1 1 0 0 1-1.5.9L15 14.5V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>一键视频</button>
+              <button class="sw" aria-label="桌面快捷方式"><span class="knob"></span></button>
+              <button class="iconbtn" data-del="李秀英"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            </div>
+          </div>
+
+          <div class="contact">
+            <div class="ava av3">国</div>
+            <div class="meta"><div class="mname">王建国</div><div class="mrem">老战友</div></div>
+            <div class="trailing">
+              <button class="callbtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2l4-2.6a1 1 0 0 1 1.5.9V16a1 1 0 0 1-1.5.9L15 14.5V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>一键视频</button>
+              <button class="sw on" aria-label="桌面快捷方式"><span class="knob"></span></button>
+              <button class="iconbtn" data-del="王建国"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            </div>
+          </div>
+
+          <div class="contact">
+            <div class="ava av4">宝</div>
+            <div class="meta"><div class="mname">小宝</div><div class="mrem">孙子</div></div>
+            <div class="trailing">
+              <button class="callbtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2l4-2.6a1 1 0 0 1 1.5.9V16a1 1 0 0 1-1.5.9L15 14.5V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>一键视频</button>
+              <button class="sw" aria-label="桌面快捷方式"><span class="knob"></span></button>
+              <button class="iconbtn" data-del="小宝"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty" id="emptyState">
+          <div class="eico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="etxt">还没有家人联系人<br>点击右下角 <b>＋</b> 添加家人</div>
+        </div>
+
+        <div class="loading" id="loadingState"><div class="spin"></div></div>
+
+        <button class="fab" id="fab" title="添加家人"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+
+        <div class="dlg-mask" id="dlgMask">
+          <div class="dialog">
+            <h3>删除联系人？</h3>
+            <p id="dlgText">将同时移除其桌面快捷方式，此操作不可撤销。</p>
+            <div class="acts">
+              <button class="dlg-btn txt" id="dlgCancel">取消</button>
+              <button class="dlg-btn danger" id="dlgOk">删除</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav" id="navList">
+          <div class="tab on" data-go="list"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>联系人</div>
+          <div class="tab" data-go="keep"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>保活设置</div>
+          <div class="tab" data-go="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>关于</div>
+        </div>
+      </section>
+
+      <!-- ===== 添加 / 编辑 ===== -->
+      <section class="screen" id="scr-edit">
+        <div class="appbar">
+          <button class="iconbtn" id="editBack"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+          <span class="ttl" style="font-size:18px">编辑联系人</span>
+          <span class="grow"></span>
+        </div>
+        <div class="form">
+          <div class="field"><label>姓名</label><input class="finput" value="张大明" /></div>
+          <div class="field"><label>微信备注名</label><input class="finput" value="大儿子" /></div>
+          <div class="field"><label>微信号(wxid)</label><input class="finput" placeholder="选填，有备注名可不填" /></div>
+          <div class="field"><label>电话号码</label><input class="finput" placeholder="选填" /></div>
+          <div class="field">
+            <label>头像颜色</label>
+            <div class="colorsel">
+              <div class="swatch av0 sel"></div><div class="swatch av1"></div><div class="swatch av2"></div><div class="swatch av3"></div>
+              <div class="swatch av4"></div><div class="swatch av5"></div><div class="swatch av6"></div><div class="swatch av7"></div>
+            </div>
+          </div>
+        </div>
+        <div class="savebar">
+          <button class="savebtn">保存</button>
+          <button class="delbtn">删除</button>
+        </div>
+      </section>
+
+      <!-- ===== 保活设置 ===== -->
+      <section class="screen" id="scr-keep">
+        <div class="appbar">
+          <button class="iconbtn" data-go="list"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+          <span class="ttl" style="font-size:18px">保活与权限设置</span>
+        </div>
+        <div class="scroll" style="padding-top:6px">
+          <div class="ksub">确保一键视频随时可用</div>
+          <div class="ksum">
+            <div class="ring"><i>4/6</i></div>
+            <div class="kinfo"><div class="kt">保活完成度</div><div class="ks">已开启 4 项，保障通话不被系统中断</div></div>
+            <div class="kpct">67%</div>
+          </div>
+
+          <div class="kgroup">权限项</div>
+          <div class="krow">
+            <div class="kico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="kmeta"><div class="kt">无障碍服务</div><div class="kstat on">已开启 · 核心功能，必须开启</div></div>
+            <button class="kgo">去设置</button>
+          </div>
+          <div class="krow">
+            <div class="kico"><svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.8 2.2-1.4 1.4A8 8 0 1 0 12 20V18a6 6 0 1 1 5.8-12.8z"/></svg></div>
+            <div class="kmeta"><div class="kt">开机自启</div><div class="kstat on">已开启 · 重启手机后自动运行</div></div>
+            <button class="kgo">去设置</button>
+          </div>
+          <div class="krow">
+            <div class="kico"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><path d="M18 11v2"/></svg></div>
+            <div class="kmeta"><div class="kt">电池优化豁免</div><div class="kstat off">未开启 · 防止系统后台杀掉应用</div></div>
+            <button class="kgo">去设置</button>
+          </div>
+          <div class="krow">
+            <div class="kico"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+            <div class="kmeta"><div class="kt">通知权限</div><div class="kstat on">已开启 · 显示保活常驻通知</div></div>
+            <button class="kgo">去设置</button>
+          </div>
+          <div class="krow">
+            <div class="kico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 10h8M8 14h5"/></svg></div>
+            <div class="kmeta"><div class="kt">后台运行</div><div class="kstat off">未开启 · 允许应用在后台保持运行</div></div>
+            <button class="kgo">去设置</button>
+          </div>
+          <div class="krow">
+            <div class="kico"><svg viewBox="0 0 24 24"><path d="M17 18H7V6h10v1h2V3H5v18h14v-4zM21 8l-2 1 1.5.5L18 12l-2-2.5L17.5 9 16 8l2-1-1.5-.5L18 4l2 2.5L21.5 6 20 8z"/></svg></div>
+            <div class="kmeta"><div class="kt">桌面快捷方式权限</div><div class="kstat on">已开启 · 允许创建家人桌面图标</div></div>
+            <button class="kgo">去设置</button>
+          </div>
+
+          <div class="calib" id="calibCard">
+            <div class="cico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="2.4"/></svg></div>
+            <div class="ctxt"><div class="ct">按键位置校准</div><div class="cs">已校准 · 校准微信按键位置，确保拨号准确</div></div>
+            <div class="carrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+
+          <div class="calib" style="background:linear-gradient(135deg,#9B8CFF,#10B59A)" id="vendorCard">
+            <div class="cico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" fill="none"/></svg></div>
+            <div class="ctxt"><div class="ct">厂商自启动引导</div><div class="cs">小米手机：进入「手机管家 - 应用管理 - 自启动」开启一键视频，电池优化设为无限制</div></div>
+            <div class="carrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 按键位置校准 ===== -->
+      <section class="screen" id="scr-calib">
+        <div class="appbar">
+          <button class="iconbtn" data-go="keep"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+          <span class="ttl" style="font-size:18px">按键位置校准</span>
+        </div>
+        <div class="scroll" style="padding-top:6px">
+          <div class="status-card ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg><span class="st">已校准</span></div>
+
+          <div class="autodial">
+            <div class="ad-meta"><div class="ad-t">自动拨打视频通话</div><div class="ad-s">开启：全自动搜索并拨打视频通话</div></div>
+            <button class="sw on" aria-label="自动拨打"><span class="knob"></span></button>
+          </div>
+
+          <div class="secttl">前置条件</div>
+          <div class="preq">
+            <div class="pb" style="background:rgba(16,181,154,.15);color:#5fe3c9"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <div class="pm"><div class="pt">悬浮窗权限</div><div class="pd">校准需要此权限来显示点击标记</div></div>
+          </div>
+          <div class="preq">
+            <div class="pb" style="background:rgba(16,181,154,.15);color:#5fe3c9"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <div class="pm"><div class="pt">无障碍服务</div><div class="pd">校准前需先开启无障碍服务</div></div>
+          </div>
+          <div class="preq">
+            <div class="pb" style="background:rgba(16,181,154,.15);color:#5fe3c9"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4A8.4 8.4 0 1 1 21 11.5z"/></svg></div>
+            <div class="pm"><div class="pt">微信</div><div class="pd">微信已安装</div></div>
+          </div>
+
+          <button class="savebtn" id="startCalib" style="margin-top:8px">重新校准</button>
+
+          <div class="instr">
+            <div class="it">校准说明</div>
+            <div class="id">点击「开始校准」后会自动打开微信，请按屏幕顶部引导操作（共 8 步）：
+
+1. 进入任意聊天对话
+2. 点击屏幕上「+」号按钮的位置
+3. 手动点击「+」号按钮打开功能面板
+4. 点击面板中「视频通话」图标的位置
+5. 手动点击「视频通话」图标打开选择菜单
+6. 点击菜单中「视频通话」选项的位置
+7. 返回微信首页
+8. 点击顶部「搜索」按钮的位置
+
+每次点击后用底部按钮确认。校准只需一次，之后拨号自动使用保存的坐标。
+
+可通过上方开关控制是否自动拨打最后一步。</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 关于 ===== -->
+      <section class="screen" id="scr-about">
+        <div class="appbar">
+          <button class="iconbtn" data-go="list"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+          <span class="ttl" style="font-size:18px">关于</span>
+        </div>
+        <div class="about">
+          <div class="launcher"><div class="lb"></div><div class="lf"><svg width="52" height="52" viewBox="0 0 24 24" fill="#fff"><path d="M4 7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2l4-2.6a1 1 0 0 1 1.5.9V16a1 1 0 0 1-1.5.9L15 14.5V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg></div></div>
+          <div class="an">一键视频</div>
+          <div class="av">版本 1.3.3</div>
+          <div class="desc">为家里的老人制作的一键微信视频通话工具。
+
+每个家人一个桌面图标，点击即拨，无需任何操作。
+
+个人开发，自用，不收集任何数据。</div>
+          <div class="chlog">
+            <div class="clrow"><div class="cv">V1.3.3  (2026-07-31)</div><div class="cd">· 退出 App 后从最近任务列表隐藏卡片，后台继续保活防误杀
+· 前台通知不可滑除，防止老人误清导致服务被杀
+· 从最近任务划掉时服务自动重启，保活更稳定
+· 保活设置页新增厂商自启动/电池优化引导</div></div>
+            <div class="clrow"><div class="cv">V1.3.2  (2026-07-31)</div><div class="cd">· 状态机并发加固，修复超时检查与状态转换竞态
+· 修复多处无障碍节点泄漏，长时间使用更稳定
+· 拨号失败自动重试一次，仍失败给出友好提示
+· 分阶段超时更精准，总超时 75s→60s，失败反馈更快
+· 手机显示设置（分辨率/字体）变化时提醒重新校准</div></div>
+            <div class="clrow"><div class="cv">V1.3.1  (2026-07-30)</div><div class="cd">· 60Hz 屏幕适配：手势时长 80→120ms，步骤延迟放宽
+· 修复取消后超时回调仍触发的竞态
+· 修复 VOIP 事件重复触发完成逻辑
+· 修复搜索结果页 root 为空时静默卡死
+· 总超时 60s→75s，单步 15s→18s（适配低端机）</div></div>
+            <div class="clrow"><div class="cv">V1.3.0  (2026-07-30)</div><div class="cd">· 架构重构：无障碍服务拆分为状态机+节点查找+悬浮窗三组件
+· 超时常量统一，消除魔法数字
+· 修复节点遍历内存泄漏
+· 状态机可独立单元测试</div></div>
+            <div class="clrow"><div class="cv">V1.2.0  (2026-07-30)</div><div class="cd">· 微信升级检测：校准后微信更新会自动提示重新校准
+· 并发保护：呼叫中拒绝重复请求
+· R8 混淆 + targetSdk 35
+· 关于页内嵌更新日志</div></div>
+          </div>
+          <div class="wxver">当前微信版本：8.0.50</div>
+        </div>
+      </section>
+
+      <!-- ===== 校准 Overlay（8 步）===== -->
+      <div class="calib-overlay" id="calibOverlay">
+        <div class="co-top">
+          <button class="iconbtn" id="coClose"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+          <span class="co-title">按键位置校准</span>
+          <span class="co-step" id="coStep">第 1 / 8 步</span>
+        </div>
+        <div class="co-progress"><div class="co-bar" id="coBar"></div></div>
+        <div class="co-body">
+          <div class="co-phone"><div class="co-screen"></div><div class="co-key" id="coKey">＋</div></div>
+          <h3 id="coH">进入任意聊天对话</h3>
+          <p id="coD">请先打开微信，进入任意一个家人的聊天对话界面，然后点击下方按钮开始记录按键位置。</p>
+        </div>
+        <div class="co-dots" id="coDots"></div>
+        <div class="co-actions">
+          <button class="co-ghost" id="coPrev">上一步</button>
+          <button class="co-primary" id="coNext">下一步</button>
+        </div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <!-- ===== 全界面画廊 ===== -->
+  <div class="gallery">
+    <h2>全界面预览（v2 设计语言 × 架构 5 屏）</h2>
+    <p class="gdesc">下方为 5 个界面同时渲染的静态缩略图，点击上方「屏幕」切换可交互预览，右上角可切深/浅色。</p>
+    <div class="ggrid" id="gallery"></div>
+  </div>
+</div>
+
+<script>
+/* 主题切换 */
+const app = document.querySelector('.app');
+const themeBtn = document.getElementById('themeBtn');
+themeBtn.addEventListener('click', () => {
+  const dark = app.dataset.theme === 'dark';
+  app.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '☀️ 浅色' : '🌙 深色';
+});
+
+/* 屏幕切换 */
+const screens = {list:'scr-list', edit:'scr-edit', keep:'scr-keep', calib:'scr-calib', about:'scr-about'};
+function goScreen(key){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screens[key]).classList.add('active');
+  document.querySelectorAll('#screenSeg button').forEach(b=>b.classList.toggle('on', b.dataset.screen===key));
+  // 校准 overlay 仅在 calib 屏可见，关闭它
+  document.getElementById('calibOverlay').classList.remove('show');
+}
+document.querySelectorAll('#screenSeg button').forEach(b=>b.addEventListener('click',()=>goScreen(b.dataset.screen)));
+
+/* 底部 Tab */
+document.querySelectorAll('#navList .tab').forEach(t=>t.addEventListener('click',()=>{
+  const map={list:'list',keep:'keep',about:'about'};
+  goScreen(map[t.dataset.go]);
+  document.querySelectorAll('#navList .tab').forEach(x=>x.classList.toggle('on', x===t));
+}));
+/* 返回类按钮（保活/校准/关于顶部返回 & 编辑返回） */
+document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>{
+  const map={list:'list',keep:'keep',about:'about'};
+  if(map[el.dataset.go]) goScreen(map[el.dataset.go]);
+}));
+document.getElementById('editBack').addEventListener('click',()=>goScreen('list'));
+document.getElementById('fab').addEventListener('click',()=>goScreen('edit'));
+
+/* 联系人列表状态：正常 / 加载 / 空态 */
+const stateSeg=document.getElementById('stateSeg');
+const listScroll=document.getElementById('listScroll');
+const emptyState=document.getElementById('emptyState');
+const loadingState=document.getElementById('loadingState');
+stateSeg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  stateSeg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+  const s=b.dataset.state;
+  listScroll.style.display = s==='normal' ? '' : 'none';
+  emptyState.classList.toggle('show', s==='empty');
+  loadingState.classList.toggle('show', s==='loading');
+}));
+
+/* 删除确认 Dialog */
+const dlgMask=document.getElementById('dlgMask');
+const dlgText=document.getElementById('dlgText');
+document.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{
+  dlgText.textContent='将同时移除「'+btn.dataset.del+'」的桌面快捷方式，此操作不可撤销。';
+  dlgMask.classList.add('show');
+}));
+document.getElementById('dlgCancel').addEventListener('click',()=>dlgMask.classList.remove('show'));
+document.getElementById('dlgOk').addEventListener('click',()=>dlgMask.classList.remove('show'));
+
+/* 头像颜色选择 */
+document.querySelectorAll('.colorsel .swatch').forEach(sw=>sw.addEventListener('click',()=>{
+  document.querySelectorAll('.colorsel .swatch').forEach(x=>x.classList.remove('sel'));
+  sw.classList.add('sel');
+}));
+
+/* Switch 切换 */
+document.querySelectorAll('.sw').forEach(sw=>sw.addEventListener('click',()=>sw.classList.toggle('on')));
+
+/* 校准入口 / 开始校准 → Overlay（8 步，真实微信步骤） */
+const STEPS=[
+  {h:'进入任意聊天对话', d:'请先打开微信，进入任意一个家人的聊天对话界面，然后点击下方按钮开始记录按键位置。', x:50, y:50, k:'＋'},
+  {h:'点击「+」号按钮的位置', d:'在聊天界面右下角找到「+」号按钮，点击屏幕中高亮的位置以记录它的坐标。', x:84, y:88, k:'＋'},
+  {h:'手动点击「+」号按钮', d:'请手动点击真实的「+」号按钮，打开功能面板（此步用于确认）。', x:84, y:88, k:'✓'},
+  {h:'点击「视频通话」图标的位置', d:'在功能面板中找到「视频通话」图标，点击高亮位置记录坐标。', x:40, y:55, k:'🎬'},
+  {h:'手动点击「视频通话」图标', d:'请手动点击真实的「视频通话」图标，打开选择菜单。', x:40, y:55, k:'✓'},
+  {h:'点击「视频通话」选项的位置', d:'在弹出的菜单中找到「视频通话」选项，点击高亮位置记录坐标。', x:50, y:40, k:'📞'},
+  {h:'返回微信首页', d:'校准通话入口后，返回微信首页以记录搜索入口位置。', x:18, y:18, k:'⌂'},
+  {h:'点击顶部「搜索」按钮的位置', d:'在微信首页顶部找到「搜索」按钮，点击高亮位置完成全部 8 步校准。', x:82, y:12, k:'🔍'}
+];
+let cur=0;
+const coOverlay=document.getElementById('calibOverlay');
+const coKey=document.getElementById('coKey'), coH=document.getElementById('coH'), coD=document.getElementById('coD');
+const coStep=document.getElementById('coStep'), coBar=document.getElementById('coBar'), coDots=document.getElementById('coDots');
+function renderStep(){
+  const s=STEPS[cur];
+  coH.textContent=s.h; coD.textContent=s.d;
+  coKey.textContent=s.k;
+  coKey.style.left=s.x+'%'; coKey.style.top=s.y+'%';
+  coStep.textContent='第 '+(cur+1)+' / 8 步';
+  coBar.style.width=((cur+1)/8*100)+'%';
+  coDots.innerHTML='';
+  for(let i=0;i<8;i++){const d=document.createElement('i'); if(i<=cur)d.classList.add('on'); coDots.appendChild(d);}
+}
+document.getElementById('calibCard').addEventListener('click',()=>{cur=0; renderStep(); coOverlay.classList.add('show');});
+document.getElementById('startCalib').addEventListener('click',()=>{cur=0; renderStep(); coOverlay.classList.add('show');});
+document.getElementById('vendorCard').addEventListener('click',()=>alert('跳转厂商自启动设置（预览）'));
+document.getElementById('coClose').addEventListener('click',()=>coOverlay.classList.remove('show'));
+document.getElementById('coPrev').addEventListener('click',()=>{ if(cur>0){cur--; renderStep();} });
+document.getElementById('coNext').addEventListener('click',()=>{ if(cur<7){cur++; renderStep();} else {coOverlay.classList.remove('show');} });
+
+/* 画廊：克隆 5 屏 */
+const galMeta={list:['联系人列表','底部 Tab'],edit:['添加 / 编辑联系人','全屏子路由'],keep:['保活与权限设置','底部 Tab'],calib:['按键位置校准','全屏子路由'],about:['关于','底部 Tab']};
+const gal=document.getElementById('gallery');
+['list','edit','keep','calib','about'].forEach(k=>{
+  const wrap=document.createElement('div'); wrap.className='thumb';
+  const frame=document.createElement('div'); frame.className='thumb-frame';
+  const body=document.createElement('div'); body.className='thumb-body';
+  const clone=document.getElementById(screens[k]).cloneNode(true);
+  clone.classList.add('active'); clone.style.display='flex'; clone.style.position='relative'; clone.style.inset='auto'; clone.style.flex='1'; clone.style.minHeight='0';
+  clone.removeAttribute('id');
+  // 关闭克隆体内交互
+  clone.querySelectorAll('[onclick]').forEach(e=>e.removeAttribute('onclick'));
+  body.appendChild(clone); frame.appendChild(body);
+  const cap=document.createElement('div'); cap.className='cap';
+  cap.innerHTML=galMeta[k][0]+'<small>'+galMeta[k][1]+'</small>';
+  wrap.appendChild(frame); wrap.appendChild(cap);
+  wrap.style.cursor='pointer'; wrap.addEventListener('click',()=>goScreen(k));
+  gal.appendChild(wrap);
+});
+</script>
+</body>
+</html>

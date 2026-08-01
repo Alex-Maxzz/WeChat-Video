@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>一键视频 · 图标优化（v2 设计语言）</title>
+<style>
+  :root{
+    /* v2 设计语言 token */
+    --primary:#9B8CFF; --primary-d:#6E5BE6; --primary-l:#B7ACFF;
+    --teal:#10B59A; --ink:#E8E6F5; --sub:#A0A0BC; --hair:rgba(255,255,255,.07);
+    --bg:#0b0a14;
+    /* 8 色头像渐变（v2） */
+    --av0:linear-gradient(135deg,#7C6BFF,#A78BFA);
+    --av1:linear-gradient(135deg,#0EA5E9,#38BDF8);
+    --av2:linear-gradient(135deg,#10B59A,#34D399);
+    --av3:linear-gradient(135deg,#F59E0B,#FBBF24);
+    --av4:linear-gradient(135deg,#EC4899,#F472B6);
+    --av5:linear-gradient(135deg,#8B5CF6,#C4B5FD);
+    --av6:linear-gradient(135deg,#EF4444,#F87171);
+    --av7:linear-gradient(135deg,#14B8A6,#5EEAD4);
+    /* 旧版 6 色（对比用） */
+    --old0:linear-gradient(135deg,#667EA0,#764BA2);
+    --old1:linear-gradient(135deg,#F093FB,#F5576C);
+    --old2:linear-gradient(135deg,#4FACFE,#00F2FE);
+    --old3:linear-gradient(135deg,#43E97B,#38F9D7);
+    --old4:linear-gradient(135deg,#FA709A,#FEE140);
+    --old5:linear-gradient(135deg,#30CFD0,#330867);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    background:
+      radial-gradient(900px 600px at 8% -8%, rgba(155,140,255,.16), transparent 55%),
+      radial-gradient(820px 560px at 98% 110%, rgba(16,181,154,.12), transparent 55%),
+      var(--bg);
+    color:var(--ink); padding:36px 20px 80px; line-height:1.55; -webkit-font-smoothing:antialiased; min-height:100vh}
+  .wrap{max-width:1120px; margin:0 auto}
+  .head{max-width:880px; margin:0 auto 26px}
+  h1{font-size:25px; margin:0 0 8px; font-weight:700; letter-spacing:.3px}
+  .lede{color:#9b97b8; font-size:14.5px; margin:0 0 14px}
+  .pill{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; padding:6px 13px; border-radius:999px;
+    background:rgba(16,181,154,.12); border:1px solid rgba(16,181,154,.35); color:#5fe3c9}
+  .board{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:26px; align-items:start}
+
+  /* ===== 面板 ===== */
+  .panel{background:#16151F; border:1px solid var(--hair); border-radius:22px; padding:22px 20px 24px;
+    box-shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 44px -30px rgba(0,0,0,.7)}
+  .panel h2{font-size:15px; margin:0 0 4px; font-weight:700; display:flex; align-items:center; gap:9px}
+  .tag{font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:rgba(155,140,255,.14); color:#bdb2ff}
+  .panel .desc{font-size:12.5px; color:#8f8bab; margin:6px 2px 18px; min-height:32px}
+
+  /* ===== 对比行 ===== */
+  .compare{display:flex; gap:22px; align-items:flex-end; justify-content:center; flex-wrap:wrap; margin:6px 0 4px}
+  .ccol{display:flex; flex-direction:column; align-items:center; gap:9px}
+  .ccol .cap{font-size:11.5px; font-weight:600}
+  .cap.old{color:#8f8bab} .cap.new{color:#5fe3c9}
+
+  /* 桌面背景衬底 */
+  .desk{width:100%; border-radius:16px; padding:22px 10px; background:
+      linear-gradient(135deg,#1b2740,#0e1730); display:flex; gap:18px; justify-content:center; align-items:flex-end; flex-wrap:wrap}
+
+  /* ===== 通用图标渲染（渐变 + 尾字，无徽标） ===== */
+  .tile{position:relative; display:flex; align-items:center; justify-content:center; color:#fff;
+    font-weight:800; flex:none; box-shadow:0 12px 26px -10px rgba(0,0,0,.55)}
+  .tile .ch{position:relative; z-index:2; text-shadow:0 1px 4px rgba(0,0,0,.30)}
+  /* 顶部柔光，增加体积感 */
+  .tile::before{content:""; position:absolute; inset:0; border-radius:inherit;
+    background:radial-gradient(120% 90% at 28% 18%, rgba(255,255,255,.28), transparent 55%); z-index:1}
+  .tile.round{border-radius:26%}
+  .tile.circle{border-radius:50%}
+
+  /* 旧版徽标（仅对比用） */
+  .badge-old{position:absolute; right:2%; bottom:2%; width:40%; height:40%; border-radius:50%;
+    background:#fff; display:flex; align-items:center; justify-content:center; z-index:3}
+  .badge-old i{width:80%; height:80%; border-radius:50%; background:var(--teal); position:relative}
+  .badge-old i::before{content:""; position:absolute; left:24%; top:34%; width:26%; height:32%; background:#fff; border-radius:50%}
+  .badge-old i::after{content:""; position:absolute; left:50%; top:30%; width:0; height:0;
+    border-left:16% solid #fff; border-top:13% solid transparent; border-bottom:13% solid transparent}
+
+  /* ===== 启动图标（自适应） ===== */
+  .adaptive{position:relative; border-radius:24px; overflow:hidden; box-shadow:0 22px 46px -18px rgba(40,30,90,.7)}
+  .adaptive .bg{position:absolute; inset:0}
+  .adaptive .fg{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center}
+  .adaptive .fg svg{filter:drop-shadow(0 4px 9px rgba(0,0,0,.25))}
+  .launch-old .bg{background:#5B4FE0}
+
+  .foot{margin:34px auto 0; max-width:880px; font-size:13px; color:#8f8bab; line-height:1.9}
+  .foot b{color:#bdb2ff}
+  .check{list-style:none; padding:0; margin:6px 0 0; font-size:13px; color:#cfcbe6; line-height:1.9}
+  .check li{padding-left:22px; position:relative; margin-bottom:6px}
+  .check li::before{content:"✓"; position:absolute; left:0; top:0; color:#5fe3c9; font-weight:800}
+  .code{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12px; color:#e8e4ff;
+    background:#0e0d18; border:1px solid var(--hair); border-radius:10px; padding:12px 14px; margin:10px 0 0; white-space:pre-wrap; line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>一键视频 · 图标优化（v2 设计语言）</h1>
+    <p class="lede">按你的意见简化：<b>快捷方式</b>去掉右下角视频徽标，只留渐变底 + 尾字；<b>启动图标</b>用渐变背景 + 白色视频通话图标。均统一到 v2 主色与 8 色头像体系。仅供审阅，<b>未改动工程文件</b>。</p>
+    <span class="pill">🎨 v2 设计语言 · 待确认后落地</span>
+  </div>
+
+  <div class="board">
+
+    <!-- ========== 启动图标 ========== -->
+    <div class="panel">
+      <h2><span class="tag">启动图标</span> App Launcher</h2>
+      <p class="desc">背景由纯色改为 v2 品牌渐变；前景保持白色视频通话图标。改动最小、最稳妥。</p>
+
+      <div class="compare">
+        <div class="ccol">
+          <div class="adaptive launch-old" style="width:104px; height:104px">
+            <div class="bg"></div>
+            <div class="fg">
+              <svg width="60" height="60" viewBox="0 0 108 108" fill="#fff">
+                <path d="M38,38 L62,38 A6,6 0 0 1 68,44 L68,64 A6,6 0 0 1 62,70 L38,70 A6,6 0 0 1 32,64 L32,44 A6,6 0 0 1 38,38 Z"/>
+                <path d="M68,48 L80,40 L80,68 L68,60 Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="cap old">旧版 · 纯色底+摄像头</div>
+        </div>
+
+        <div class="ccol">
+          <div class="adaptive" style="width:104px; height:104px">
+            <div class="bg" style="background:linear-gradient(135deg,#6E5BE6 0%, #9B8CFF 55%, #B7ACFF 100%)"></div>
+            <div class="fg">
+              <svg width="60" height="60" viewBox="0 0 108 108" fill="#fff">
+                <path d="M38,38 L62,38 A6,6 0 0 1 68,44 L68,64 A6,6 0 0 1 62,70 L38,70 A6,6 0 0 1 32,64 L32,44 A6,6 0 0 1 38,38 Z"/>
+                <path d="M68,48 L80,40 L80,68 L68,60 Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="cap new">新版 · 渐变底+视频通话图标</div>
+        </div>
+      </div>
+
+      <div class="desk" style="margin-top:16px">
+        <div class="adaptive" style="width:62px; height:62px">
+          <div class="bg" style="background:linear-gradient(135deg,#6E5BE6 0%, #9B8CFF 55%, #B7ACFF 100%)"></div>
+          <div class="fg"><svg width="36" height="36" viewBox="0 0 108 108" fill="#fff"><path d="M38,38 L62,38 A6,6 0 0 1 68,44 L68,64 A6,6 0 0 1 62,70 L38,70 A6,6 0 0 1 32,64 L32,44 A6,6 0 0 1 38,38 Z"/><path d="M68,48 L80,40 L80,68 L68,60 Z"/></svg></div>
+        </div>
+        <div style="color:#cdd6ea; font-size:11px; align-self:center; max-width:150px">桌面 48px 小尺寸下仍清晰可读</div>
+      </div>
+    </div>
+
+    <!-- ========== 快捷方式 · 圆角方块（推荐） ========== -->
+    <div class="panel">
+      <h2><span class="tag">快捷图标</span> 桌面快捷方式 · 圆角方块（推荐）</h2>
+      <p class="desc">去掉徽标，只留渐变底 + 尾字，清爽。形状两种可选，下面先给圆角方块。</p>
+
+      <div class="compare">
+        <div class="ccol">
+          <div class="tile round" style="width:96px; height:96px; background:var(--old0); font-size:42px">
+            <span class="ch">明</span>
+            <span class="badge-old"><span></span></span>
+          </div>
+          <div class="cap old">旧版 · 右下角徽标压字</div>
+        </div>
+        <div class="ccol">
+          <div class="tile round" style="width:96px; height:96px; background:var(--av0); font-size:42px">
+            <span class="ch">明</span>
+          </div>
+          <div class="cap new">新版 · 渐变底+尾字（无徽标）</div>
+        </div>
+      </div>
+
+      <div class="desk" style="margin-top:16px">
+        <div class="tile round" style="width:60px; height:60px; background:var(--av0); font-size:26px"><span class="ch">明</span></div>
+        <div class="tile round" style="width:60px; height:60px; background:var(--av4); font-size:26px"><span class="ch">花</span></div>
+        <div class="tile round" style="width:60px; height:60px; background:var(--av2); font-size:26px"><span class="ch">红</span></div>
+        <div class="tile round" style="width:60px; height:60px; background:var(--av7); font-size:26px"><span class="ch">妈</span></div>
+      </div>
+    </div>
+
+    <!-- ========== 快捷方式 · 圆形（兼容现状） ========== -->
+    <div class="panel">
+      <h2><span class="tag">快捷图标</span> 桌面快捷方式 · 圆形（现状兼容）</h2>
+      <p class="desc">若想保持现有圆形快捷方式观感，仅去掉徽标 + 渐变 6→8 色即可，改动最小。</p>
+      <div class="desk">
+        <div class="tile circle" style="width:60px; height:60px; background:var(--av1); font-size:26px"><span class="ch">明</span></div>
+        <div class="tile circle" style="width:60px; height:60px; background:var(--av3); font-size:26px"><span class="ch">花</span></div>
+        <div class="tile circle" style="width:60px; height:60px; background:var(--av5); font-size:26px"><span class="ch">红</span></div>
+        <div class="tile circle" style="width:60px; height:60px; background:var(--av6); font-size:26px"><span class="ch">妈</span></div>
+      </div>
+    </div>
+
+    <!-- ========== 落地改动清单 ========== -->
+    <div class="panel" style="grid-column:1/-1">
+      <h2><span class="tag">落地</span> 确认后我会改到工程里</h2>
+      <p class="desc">以下为对应代码改动点（确认后执行，仍不动其它文件）：</p>
+      <ul class="check">
+        <li><b>启动图标</b>：<code>ic_launcher_background.xml</code> 纯色 <span style="color:#cdd6ea">#5B4FE0</span> → 渐变 drawable（indigo→violet）；前景 <code>ic_launcher_foreground.xml</code> 保持白色视频通话图标（摄像头）。</li>
+        <li><b>快捷方式</b>：<code>ShortcutHelper.kt</code> 的 <code>createAvatarIcon</code> <b>去掉右下角 teal 徽标</b>，仅保留渐变底 + 尾字；GRADIENTS 由 6 组扩到 8 组，与 v2 头像一致。</li>
+        <li><b>形状（可选）</b>：快捷方式保持现有圆形，或改为圆角方块（squircle）绘制，更精致；按你偏好定。</li>
+        <li><b>对比度</b>：尾字加 0 1px 4px 黑色描影，保证在浅渐变（av3 琥珀 / av1 天蓝）上仍清晰——适老化可读。</li>
+      </ul>
+      <div class="code">// ShortcutHelper.kt · 关键片段示意（去掉徽标后）
+private val GRADIENTS = listOf(
+    intArrayOf(0xFF7C6BFF, 0xFFA78BFA), // av0
+    intArrayOf(0xFF0EA5E9, 0xFF38BDF8), // av1
+    intArrayOf(0xFF10B59A, 0xFF34D399), // av2
+    intArrayOf(0xFFF59E0B, 0xFFFBBF24), // av3
+    intArrayOf(0xFFEC4899, 0xFFF472B6), // av4
+    intArrayOf(0xFF8B5CF6, 0xFFC4B5FD), // av5
+    intArrayOf(0xFFEF4444, 0xFFF87171), // av6
+    intArrayOf(0xFF14B8A6, 0xFF5EEAD4), // av7
+)
+// createAvatarIcon 中移除 badge 绘制，仅画渐变圆/方块 + 白色尾字</div>
+    </div>
+
+  </div>
+
+  <p class="foot">
+    <b>本轮调整（按你的意见）：</b><br>
+    ① 启动图标：纯色底 → <b>渐变底</b>，前景保留白色视频通话图标。<br>
+    ② 快捷方式：去掉右下角视频徽标，<b>只留渐变底 + 尾字</b>，更干净；渐变 6→8 色与 v2 头像对齐。<br>
+    ③ 形状仍给「圆角方块 / 圆形」两种，你定一个即可。<br><br>
+    本文件位于 <code>UI设计预览\图标优化v2.html</code>，独立于工程，可随时删除。确认风格后我再改 <code>ShortcutHelper.kt</code> 与 <code>ic_launcher</code> 资源。
+  </p>
+</div>
+</body>
+</html>

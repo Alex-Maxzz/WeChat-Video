@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">一键视频</string>
+    <string name="accessibility_service_label">一键视频·自动拨号助手</string>
+    <string name="accessibility_service_description">自动在微信中点击「视频通话」按钮，实现一键拨打。仅在您点击桌面快捷方式时工作，不会读取或上传任何信息。</string>
+
+    <!-- 底部导航 -->
+    <string name="tab_contacts">联系人</string>
+    <string name="tab_keepalive">保活设置</string>
+    <string name="tab_about">关于</string>
+    <string name="tab_settings">设置</string>
+
+    <!-- 联系人页 -->
+    <string name="contacts_title">家人联系人</string>
+    <string name="contacts_empty">还没有联系人\n点击右下角 + 添加家人</string>
+    <string name="add_contact">添加联系人</string>
+    <string name="edit_contact">编辑联系人</string>
+    <string name="contact_name">姓名</string>
+    <string name="contact_wechat_remark">微信备注名</string>
+    <string name="contact_wechat_id">微信号(wxid)</string>
+    <string name="contact_wechat_id_hint">选填，有备注名可不填</string>
+    <string name="contact_phone">电话号码</string>
+    <string name="contact_save">保存</string>
+    <string name="contact_delete">删除</string>
+    <string name="create_shortcut">添加到桌面</string>
+    <string name="remove_shortcut">移除桌面图标</string>
+    <string name="call_now">一键视频</string>
+
+    <!-- 保活页 -->
+    <string name="keepalive_title">保活与权限设置</string>
+    <string name="keepalive_subtitle">确保一键视频随时可用</string>
+    <string name="ka_accessibility">无障碍服务</string>
+    <string name="ka_accessibility_desc">核心功能，必须开启</string>
+    <string name="ka_autostart">开机自启</string>
+    <string name="ka_autostart_desc">重启手机后自动运行</string>
+    <string name="ka_battery">电池优化豁免</string>
+    <string name="ka_battery_desc">防止系统后台杀掉应用</string>
+    <string name="ka_notification">通知权限</string>
+    <string name="ka_notification_desc">显示保活常驻通知</string>
+    <string name="ka_background">后台运行</string>
+    <string name="ka_background_desc">允许应用在后台保持运行</string>
+    <string name="ka_shortcut">桌面快捷方式权限</string>
+    <string name="ka_shortcut_desc">允许创建家人桌面图标</string>
+    <string name="ka_progress">已完成 %1$d / 6 项</string>
+    <string name="go_settings">去设置</string>
+    <string name="enabled">已开启</string>
+    <string name="not_enabled">未开启</string>
+
+    <!-- 厂商自启动引导 -->
+    <string name="ka_vendor_title">厂商自启动引导</string>
+    <string name="ka_vendor_button">去开启自启动</string>
+    <string name="ka_vendor_toast">请手动前往设置-应用管理-一键视频，开启自启动与电池优化</string>
+
+    <!-- 关于页 -->
+    <string name="about_title">关于</string>
+    <string name="about_version">版本 %1$s</string>
+    <string name="about_desc">为家里的老人制作的一键微信视频通话工具。
+
+每个家人一个桌面图标，点击即拨，无需任何操作。
+
+个人开发，自用，不收集任何数据。</string>
+
+    <!-- 呼叫中转 -->
+    <string name="calling">正在呼叫 %1$s…</string>
+    <string name="call_failed">呼叫失败，请检查微信是否安装</string>
+    <string name="accessibility_not_enabled">无障碍服务未开启，无法自动拨号</string>
+    <string name="open_accessibility">去开启无障碍</string>
+    <string name="invalid_action">无法识别的呼叫请求</string>
+    <string name="invalid_contact">联系人不存在，呼叫已取消</string>
+    <string name="call_busy">拨号服务正忙，请稍后再试</string>
+
+    <!-- 通知 -->
+    <string name="notification_channel_name">保活通知</string>
+    <string name="notification_channel_desc">保持应用在后台运行，确保一键视频可用</string>
+    <string name="notification_title">一键视频正在运行</string>
+    <string name="notification_text">一键视频正在后台守护，可放心使用</string>
+
+    <!-- 通用 -->
+    <string name="confirm">确定</string>
+    <string name="cancel">取消</string>
+    <string name="delete_confirm">确定删除联系人「%1$s」？</string>
+
+    <!-- 校准 -->
+    <string name="calibration_title">按键位置校准</string>
+    <string name="calibration_subtitle">校准微信按键位置，确保自动拨号准确</string>
+    <string name="calibration_status_done">已校准</string>
+    <string name="calibration_status_not_done">未校准</string>
+    <string name="calibration_start">开始校准</string>
+    <string name="calibration_recalibrate">重新校准</string>
+    <string name="calibration_overlay_permission">悬浮窗权限</string>
+    <string name="calibration_overlay_desc">校准需要此权限来显示点击标记</string>
+    <string name="calibration_accessibility">无障碍服务</string>
+    <string name="calibration_accessibility_desc">校准前需先开启无障碍服务</string>
+    <string name="calibration_not_done">请先完成按键位置校准</string>
+    <string name="calibration_instructions_title">校准说明</string>
+    <string name="calibration_instructions_text">点击「开始校准」后会自动打开微信，请按屏幕顶部引导操作（共8步）：
+
+1. 进入任意聊天对话
+2. 点击屏幕上「+」号按钮的位置
+3. 手动点击「+」号按钮打开功能面板
+4. 点击面板中「视频通话」图标的位置
+5. 手动点击「视频通话」图标打开选择菜单
+6. 点击菜单中「视频通话」选项的位置
+7. 返回微信首页
+8. 点击顶部「搜索」按钮的位置
+
+每次点击后用底部按钮确认。校准只需一次，之后拨号自动使用保存的坐标。
+
+可通过上方开关控制是否自动拨打最后一步。</string>
+    <string name="calibration_wechat_not_installed">未安装微信</string>
+    <string name="calibration_wechat_installed">微信已安装</string>
+    <string name="ka_calibration">按键位置校准</string>
+    <string name="ka_calibration_desc">校准微信按键位置，确保拨号准确</string>
+    <string name="ka_calibration_go">去校准</string>
+</resources>

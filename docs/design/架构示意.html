@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>老人微信视频 WXdianhua v2 · 架构示意图</title>
+<style>
+  :root{
+    --bg:#0F0E1A; --surface:#1A1828; --surface2:#252238;
+    --line:#3a3656; --txt:#E8E6F5; --txt2:#A0A0BC;
+    --purple:#8B7FFF; --purple-d:#4337A0; --teal:#10B59A; --amber:#E08A1E;
+    --danger:#ef4444; --ok:#10B59A;
+    --radius:14px; --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--txt);
+    font-family:'Inter',system-ui,'Microsoft YaHei',sans-serif;
+    line-height:1.55; padding:32px 20px 80px;
+  }
+  .wrap{max-width:1080px; margin:0 auto}
+  header.top{
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:linear-gradient(135deg,var(--surface),var(--surface2));
+    padding:22px 26px; margin-bottom:26px;
+  }
+  header.top h1{margin:0 0 6px; font-size:22px; letter-spacing:.5px}
+  header.top .sub{color:var(--txt2); font-size:13px}
+  .badge{display:inline-block; font-size:11px; padding:3px 9px; border-radius:999px;
+    background:rgba(16,181,154,.15); color:var(--teal); border:1px solid rgba(16,181,154,.35);
+    margin-left:8px; vertical-align:middle}
+  section{
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--surface); padding:22px 24px; margin-bottom:22px;
+  }
+  section h2{margin:0 0 4px; font-size:17px; display:flex; align-items:center; gap:10px}
+  section h2 .dot{width:9px; height:9px; border-radius:50%; background:var(--purple)}
+  section .desc{color:var(--txt2); font-size:13px; margin:0 0 18px}
+  /* navigation graph */
+  .navsvg{width:100%; height:auto; display:block; background:var(--surface2);
+    border-radius:10px; border:1px solid var(--line)}
+  /* route table */
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line)}
+  th{color:var(--txt2); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.5px}
+  td code{font-family:var(--mono); color:var(--purple); background:rgba(139,127,255,.1);
+    padding:1px 6px; border-radius:6px; font-size:12px}
+  .tag{font-size:11px; padding:2px 8px; border-radius:6px; white-space:nowrap}
+  .t-tab{background:rgba(139,127,255,.15); color:var(--purple)}
+  .t-full{background:rgba(16,181,154,.15); color:var(--teal)}
+  .t-cal{background:rgba(224,138,30,.15); color:var(--amber)}
+  /* data model */
+  .entity{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px}
+  .field{border:1px solid var(--line); border-radius:10px; padding:11px 13px; background:var(--surface2)}
+  .field .k{font-family:var(--mono); font-size:12px; color:var(--purple)}
+  .field .t{font-size:11px; color:var(--txt2)}
+  .field .v{font-size:12px; color:var(--txt); margin-top:3px}
+  .field .opt{color:var(--amber)}
+  /* flow */
+  .flowsvg{width:100%; height:auto; display:block; background:var(--surface2);
+    border-radius:10px; border:1px solid var(--line)}
+  /* tokens */
+  .tokens{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px}
+  .sw{display:flex; align-items:center; gap:10px; border:1px solid var(--line);
+    border-radius:10px; padding:9px 11px; background:var(--surface2)}
+  .sw .chip{width:34px; height:34px; border-radius:8px; flex:none; border:1px solid rgba(255,255,255,.12)}
+  .sw .meta{font-size:12px}
+  .sw .meta b{font-family:var(--mono); font-size:12px}
+  .sw .meta span{color:var(--txt2); display:block; font-size:11px}
+  .grads{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+  .gcard{width:84px; text-align:center; font-size:11px; color:var(--txt2)}
+  .gchip{width:84px; height:84px; border-radius:50%; margin-bottom:6px; border:3px solid rgba(255,255,255,.14)}
+  .gchar{width:84px; height:84px; border-radius:50%; margin-bottom:6px; border:3px solid rgba(255,255,255,.14);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-size:30px; font-weight:700}
+  /* diff table */
+  .diff td.ok{color:var(--ok)} .diff td.chg{color:var(--amber)}
+  .pill{font-size:11px; padding:2px 8px; border-radius:6px}
+  .pill.ok{background:rgba(16,181,154,.15); color:var(--ok)}
+  .pill.chg{background:rgba(224,138,30,.15); color:var(--amber)}
+  footer{color:var(--txt2); font-size:12px; text-align:center; margin-top:10px}
+  .note{font-size:12px; color:var(--txt2); border-left:3px solid var(--teal); padding:6px 12px;
+    background:rgba(16,181,154,.07); border-radius:0 8px 8px 0; margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>老人微信视频 · WXdianhua v2 <span class="badge">只读架构分析 · 未改动项目</span></h1>
+    <div class="sub">包名 <code style="font-family:var(--mono);color:var(--teal)">com.elder.wechatvideo</code> · Jetpack Compose + Material3 · 数据来源：<code style="font-family:var(--mono);color:var(--purple)">app/src/main/java/...</code> 真实代码</div>
+  </header>
+
+  <!-- ===== 1. 导航架构 ===== -->
+  <section>
+    <h2><span class="dot"></span>① 导航架构（NavHost 路由图）</h2>
+    <p class="desc">底部 3 个 Tab（Scaffold + NavigationBar）；添加/编辑为全屏子路由（无底部栏）；校准是独立路由，由保活页跳转进入，<b>不是</b>页内浮层。startDestination = contacts。</p>
+
+    <svg class="navsvg" viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="#8B7FFF"/>
+        </marker>
+        <marker id="arT" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="#10B59A"/>
+        </marker>
+        <marker id="arA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="#E08A1E"/>
+        </marker>
+      </defs>
+
+      <!-- AppNavigation scaffold -->
+      <rect x="40" y="180" width="120" height="120" rx="12" fill="#252238" stroke="#3a3656"/>
+      <text x="100" y="232" fill="#E8E6F5" font-size="14" text-anchor="middle" font-weight="600">AppNavigation</text>
+      <text x="100" y="252" fill="#A0A0BC" font-size="11" text-anchor="middle">Scaffold</text>
+      <text x="100" y="270" fill="#A0A0BC" font-size="11" text-anchor="middle">NavHost</text>
+
+      <!-- bottom bar -->
+      <rect x="300" y="300" width="380" height="64" rx="12" fill="#1A1828" stroke="#8B7FFF"/>
+      <text x="490" y="322" fill="#8B7FFF" font-size="12" text-anchor="middle" font-weight="600">NavigationBar（仅 3 主 Tab 显示）</text>
+      <text x="360" y="350" fill="#E8E6F5" font-size="12" text-anchor="middle">👥 联系人</text>
+      <text x="490" y="350" fill="#E8E6F5" font-size="12" text-anchor="middle">🛡 保活</text>
+      <text x="620" y="350" fill="#E8E6F5" font-size="12" text-anchor="middle">ℹ 关于</text>
+
+      <!-- 3 tab route boxes -->
+      <rect x="220" y="90" width="150" height="62" rx="10" fill="#252238" stroke="#8B7FFF"/>
+      <text x="295" y="118" fill="#E8E6F5" font-size="13" text-anchor="middle" font-weight="600">contacts</text>
+      <text x="295" y="138" fill="#A0A0BC" font-size="11" text-anchor="middle">联系人列表</text>
+
+      <rect x="425" y="90" width="150" height="62" rx="10" fill="#252238" stroke="#8B7FFF"/>
+      <text x="500" y="118" fill="#E8E6F5" font-size="13" text-anchor="middle" font-weight="600">keepalive</text>
+      <text x="500" y="138" fill="#A0A0BC" font-size="11" text-anchor="middle">保活设置</text>
+
+      <rect x="630" y="90" width="150" height="62" rx="10" fill="#252238" stroke="#8B7FFF"/>
+      <text x="705" y="118" fill="#E8E6F5" font-size="13" text-anchor="middle" font-weight="600">about</text>
+      <text x="705" y="138" fill="#A0A0BC" font-size="11" text-anchor="middle">关于</text>
+
+      <!-- full screen sub routes -->
+      <rect x="220" y="200" width="150" height="62" rx="10" fill="#252238" stroke="#10B59A"/>
+      <text x="295" y="228" fill="#E8E6F5" font-size="13" text-anchor="middle" font-weight="600">contacts/add</text>
+      <text x="295" y="248" fill="#A0A0BC" font-size="11" text-anchor="middle">添加（全屏）</text>
+
+      <rect x="425" y="200" width="160" height="62" rx="10" fill="#252238" stroke="#10B59A"/>
+      <text x="505" y="228" fill="#E8E6F5" font-size="13" text-anchor="middle" font-weight="600">contacts/edit/{id}</text>
+      <text x="505" y="248" fill="#A0A0BC" font-size="11" text-anchor="middle">编辑（全屏）</text>
+
+      <!-- calibration route -->
+      <rect x="640" y="200" width="170" height="62" rx="10" fill="#252238" stroke="#E08A1E"/>
+      <text x="725" y="228" fill="#E8E6F5" font-size="13" text-anchor="middle" font-weight="600">calibration</text>
+      <text x="725" y="248" fill="#A0A0BC" font-size="11" text-anchor="middle">校准（独立路由）</text>
+
+      <!-- start arrow -->
+      <line x1="160" y1="210" x2="216" y2="121" stroke="#8B7FFF" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="150" y="160" fill="#8B7FFF" font-size="11">start</text>
+
+      <!-- tab -> bar -->
+      <line x1="295" y1="152" x2="295" y2="298" stroke="#8B7FFF" stroke-width="1.6" marker-end="url(#ar)"/>
+      <line x1="500" y1="152" x2="500" y2="298" stroke="#8B7FFF" stroke-width="1.6" marker-end="url(#ar)"/>
+      <line x1="705" y1="152" x2="705" y2="298" stroke="#8B7FFF" stroke-width="1.6" marker-end="url(#ar)"/>
+
+      <!-- contacts -> add/edit -->
+      <line x1="295" y1="152" x2="295" y2="198" stroke="#10B59A" stroke-width="1.6" marker-end="url(#arT)"/>
+      <line x1="305" y1="160" x2="490" y2="222" stroke="#10B59A" stroke-width="1.6" marker-end="url(#arT)"/>
+      <line x1="500" y1="152" x2="500" y2="198" stroke="#10B59A" stroke-width="1.6" marker-end="url(#arT)"/>
+
+      <!-- keepalive -> calibration -->
+      <line x1="590" y1="120" x2="640" y2="232" stroke="#E08A1E" stroke-width="1.8" marker-end="url(#arA)"/>
+      <text x="612" y="170" fill="#E08A1E" font-size="11">onNavigateToCalibration</text>
+    </svg>
+
+    <div class="note">关键事实：<b>calibration</b> 在代码里是 <code style="font-family:var(--mono);color:var(--amber)">composable(Routes.CALIBRATION)</code> 的独立全屏路由，由 <code style="font-family:var(--mono);color:var(--amber)">KeepAliveScreen.onNavigateToCalibration</code> 跳转。<b>当前 v2 预览把它做成了页内 8 步浮层</b>，这与架构不符，需改为独立页面。</div>
+  </section>
+
+  <!-- ===== 2. 路由清单 ===== -->
+  <section>
+    <h2><span class="dot"></span>② 路由清单（object Routes）</h2>
+    <p class="desc">来自 <code style="font-family:var(--mono);color:var(--purple)">ui/navigation/AppNavigation.kt</code> 的真实定义。</p>
+    <table>
+      <thead><tr><th>常量</th><th>Route</th><th>类型</th><th>底部栏</th><th>入口</th></tr></thead>
+      <tbody>
+        <tr><td>CONTACTS</td><td><code>contacts</code></td><td><span class="tag t-tab">主 Tab</span></td><td>显示</td><td>启动默认</td></tr>
+        <tr><td>CONTACTS_ADD</td><td><code>contacts/add</code></td><td><span class="tag t-full">全屏子页</span></td><td>隐藏</td><td>联系人页「+」</td></tr>
+        <tr><td>CONTACTS_EDIT</td><td><code>contacts/edit/{id}</code></td><td><span class="tag t-full">全屏子页</span></td><td>隐藏</td><td>联系人卡片编辑</td></tr>
+        <tr><td>KEEP_ALIVE</td><td><code>keepalive</code></td><td><span class="tag t-tab">主 Tab</span></td><td>显示</td><td>底部 Tab</td></tr>
+        <tr><td>ABOUT</td><td><code>about</code></td><td><span class="tag t-tab">主 Tab</span></td><td>显示</td><td>底部 Tab</td></tr>
+        <tr><td>CALIBRATION</td><td><code>calibration</code></td><td><span class="tag t-cal">独立路由</span></td><td>隐藏</td><td>保活页按钮跳转</td></tr>
+      </tbody>
+    </table>
+    <div class="note">底部栏可见条件：<code style="font-family:var(--mono);color:var(--purple)">currentRoute in {contacts, keepalive, about}</code>。从 CallBridge 跳转（<code style="font-family:var(--mono);color:var(--purple)">navigate_to_calibration</code>）会经 MainActivity 把 initialRoute 设为 calibration。</div>
+  </section>
+
+  <!-- ===== 3. 数据模型 ===== -->
+  <section>
+    <h2><span class="dot"></span>③ 数据模型 · ContactEntity</h2>
+    <p class="desc">Room 表 <code style="font-family:var(--mono);color:var(--purple)">contacts</code>（<code style="font-family:var(--mono);color:var(--purple)">data/ContactEntity.kt</code>）。UI 上展示「姓名 + 微信备注」两行，与实体一致。</p>
+    <div class="entity">
+      <div class="field"><div class="k">id</div><div class="t">Long · @PrimaryKey autoGenerate</div><div class="v">主键，自动生成</div></div>
+      <div class="field"><div class="k">name</div><div class="t">String · 必填</div><div class="v">联系人姓名</div></div>
+      <div class="field"><div class="k">wechat_remark</div><div class="t">String · 必填</div><div class="v">微信备注名（定位用）</div></div>
+      <div class="field"><div class="k">wechat_id</div><div class="t">String? · <span class="opt">可选</span></div><div class="v">wxid_xxx</div></div>
+      <div class="field"><div class="k">phone</div><div class="t">String? · <span class="opt">可选</span></div><div class="v">电话号码</div></div>
+      <div class="field"><div class="k">avatar_color_index</div><div class="t">Int · 默认 0</div><div class="v">头像渐变索引（0–5）</div></div>
+      <div class="field"><div class="k">shortcut_pinned</div><div class="t">Boolean · 默认 false</div><div class="v">是否已固定桌面快捷方式</div></div>
+      <div class="field"><div class="k">created_at</div><div class="t">Long · 默认 now()</div><div class="v">创建时间戳(ms)</div></div>
+    </div>
+    <div class="note">注意 <b>avatar_color_index 范围是 0–5</b>（共 6 组渐变），当前预览用了 8 组，需收敛到 6 组以与 <code style="font-family:var(--mono);color:var(--purple)">Color.kt / ShortcutHelper.GRADIENTS</code> 对齐。</div>
+  </section>
+
+  <!-- ===== 4. 快捷方式 -> 桥接 -> 微信 流程 ===== -->
+  <section>
+    <h2><span class="dot"></span>④ 桌面快捷方式 → CallBridge → 微信 流程</h2>
+    <p class="desc">固定图标采用回调式确认；点击图标经透明桥接 Activity 校验后拉起微信无障碍服务。来自 <code style="font-family:var(--mono);color:var(--purple)">shortcut/ShortcutHelper.kt</code>、<code style="font-family:var(--mono);color:var(--purple)">bridge/CallBridgeActivity.kt</code>。</p>
+
+    <svg class="flowsvg" viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+      <!-- pin flow -->
+      <text x="40" y="34" fill="#10B59A" font-size="13" font-weight="600">A. 固定图标（仅用户确认放置才写回数据库）</text>
+      <rect x="40" y="48" width="180" height="50" rx="10" fill="#252238" stroke="#3a3656"/>
+      <text x="130" y="72" fill="#E8E6F5" font-size="12" text-anchor="middle">pinShortcut()</text>
+      <text x="130" y="89" fill="#A0A0BC" font-size="10" text-anchor="middle">ShortcutManagerCompat</text>
+      <rect x="260" y="48" width="180" height="50" rx="10" fill="#252238" stroke="#3a3656"/>
+      <text x="350" y="72" fill="#E8E6F5" font-size="12" text-anchor="middle">用户确认放置</text>
+      <text x="350" y="89" fill="#A0A0BC" font-size="10" text-anchor="middle">系统弹窗</text>
+      <rect x="480" y="48" width="200" height="50" rx="10" fill="#252238" stroke="#3a3656"/>
+      <text x="580" y="72" fill="#E8E6F5" font-size="12" text-anchor="middle">ShortcutResultReceiver</text>
+      <text x="580" y="89" fill="#A0A0BC" font-size="10" text-anchor="middle">ACTION_PINNED 转发</text>
+      <rect x="720" y="48" width="200" height="50" rx="10" fill="#1A1828" stroke="#10B59A"/>
+      <text x="820" y="72" fill="#E8E6F5" font-size="12" text-anchor="middle">ViewModel 写 Room</text>
+      <text x="820" y="89" fill="#A0A0BC" font-size="10" text-anchor="middle">shortcut_pinned=true</text>
+      <line x1="220" y1="73" x2="256" y2="73" stroke="#10B59A" stroke-width="2" marker-end="url(#arT)"/>
+      <line x1="440" y1="73" x2="476" y2="73" stroke="#10B59A" stroke-width="2" marker-end="url(#arT)"/>
+      <line x1="680" y1="73" x2="716" y2="73" stroke="#10B59A" stroke-width="2" marker-end="url(#arT)"/>
+
+      <!-- tap flow -->
+      <text x="40" y="148" fill="#8B7FFF" font-size="13" font-weight="600">B. 点击图标发起视频（透明桥接校验）</text>
+      <rect x="40" y="162" width="190" height="56" rx="10" fill="#252238" stroke="#3a3656"/>
+      <text x="135" y="186" fill="#E8E6F5" font-size="12" text-anchor="middle">点击快捷方式</text>
+      <text x="135" y="203" fill="#A0A0BC" font-size="10" text-anchor="middle">Intent → CallBridge</text>
+      <rect x="270" y="162" width="190" height="56" rx="10" fill="#252238" stroke="#8B7FFF"/>
+      <text x="365" y="184" fill="#E8E6F5" font-size="11" text-anchor="middle">校验 action + 联系人</text>
+      <text x="365" y="200" fill="#A0A0BC" font-size="10" text-anchor="middle">无障碍 / 校准 / 版本</text>
+      <rect x="500" y="162" width="190" height="56" rx="10" fill="#252238" stroke="#3a3656"/>
+      <text x="595" y="186" fill="#E8E6F5" font-size="12" text-anchor="middle">resolveContact()</text>
+      <text x="595" y="203" fill="#A0A0BC" font-size="10" text-anchor="middle">Room 查真实存在</text>
+      <rect x="730" y="162" width="190" height="56" rx="10" fill="#1A1828" stroke="#10B59A"/>
+      <text x="825" y="186" fill="#E8E6F5" font-size="11" text-anchor="middle">拉起微信 + 无障碍</text>
+      <text x="825" y="203" fill="#A0A0BC" font-size="10" text-anchor="middle">startCall(备注名)</text>
+      <line x1="230" y1="190" x2="266" y2="190" stroke="#8B7FFF" stroke-width="2" marker-end="url(#ar)"/>
+      <line x1="460" y1="190" x2="496" y2="190" stroke="#8B7FFF" stroke-width="2" marker-end="url(#ar)"/>
+      <line x1="690" y1="190" x2="726" y2="190" stroke="#8B7FFF" stroke-width="2" marker-end="url(#ar)"/>
+
+      <!-- icon spec -->
+      <text x="40" y="262" fill="#A0A0BC" font-size="12">图标规格（createAvatarIcon）：192px 圆形渐变底 + 名字尾字(白) + 右下绿色摄像机徽标 <tspan fill="#10B59A" font-family="var(--mono)">#10B59A</tspan></text>
+      <g transform="translate(60,276)">
+        <circle cx="14" cy="14" r="14" fill="url(#g1)"/>
+        <text x="14" y="20" fill="#fff" font-size="15" text-anchor="middle" font-weight="700">明</text>
+        <circle cx="24" cy="24" r="7" fill="#fff"/>
+        <circle cx="24" cy="24" r="5.5" fill="#10B59A"/>
+        <text x="14" y="44" fill="#A0A0BC" font-size="9" text-anchor="middle">示例</text>
+      </g>
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#667EEA"/><stop offset="1" stop-color="#764BA2"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="note">「禁止直接标记已固定」规则已落实：仅 <code style="font-family:var(--mono);color:var(--purple)">ShortcutResultReceiver</code> 确认放置后，才通过 <code style="font-family:var(--mono);color:var(--purple)">onPinConfirmed</code> 把 <code style="font-family:var(--mono);color:var(--purple)">shortcut_pinned</code> 写回 Room。</div>
+  </section>
+
+  <!-- ===== 5. 真实设计 Token ===== -->
+  <section>
+    <h2><span class="dot"></span>⑤ 真实设计 Token（来自 Color.kt / Theme.kt）</h2>
+    <p class="desc">这是代码里实际生效的色板。深色为默认主用，但 <b>同时存在完整浅色方案</b>（dynamicColor 在 API≥S 启用）。当前 v2 预览的色值需对齐此处。</p>
+    <div class="tokens">
+      <div class="sw"><div class="chip" style="background:#5B4FE0"></div><div class="meta"><b>#5B4FE0</b><span>PurplePrimary</span></div></div>
+      <div class="sw"><div class="chip" style="background:#8B7FFF"></div><div class="meta"><b>#8B7FFF</b><span>PurpleLight（暗色主色）</span></div></div>
+      <div class="sw"><div class="chip" style="background:#4337A0"></div><div class="meta"><b>#4337A0</b><span>PurpleContainerDark</span></div></div>
+      <div class="sw"><div class="chip" style="background:#10B59A"></div><div class="meta"><b>#10B59A</b><span>TealSuccess（绿徽标）</span></div></div>
+      <div class="sw"><div class="chip" style="background:#E08A1E"></div><div class="meta"><b>#E08A1E</b><span>AmberWarning</span></div></div>
+      <div class="sw"><div class="chip" style="background:#0F0E1A"></div><div class="meta"><b>#0F0E1A</b><span>DarkBackground</span></div></div>
+      <div class="sw"><div class="chip" style="background:#1A1828"></div><div class="meta"><b>#1A1828</b><span>DarkSurface</span></div></div>
+      <div class="sw"><div class="chip" style="background:#252238"></div><div class="meta"><b>#252238</b><span>DarkSurfaceVariant</span></div></div>
+      <div class="sw"><div class="chip" style="background:#E8E6F5"></div><div class="meta"><b>#E8E6F5</b><span>DarkOnSurface</span></div></div>
+      <div class="sw"><div class="chip" style="background:#A0A0BC"></div><div class="meta"><b>#A0A0BC</b><span>DarkOnSurfaceVariant</span></div></div>
+    </div>
+
+    <p class="desc" style="margin-top:18px">头像渐变（<b>仅 6 组</b>，Color.kt 与 ShortcutHelper 一致）：</p>
+    <div class="grads">
+      <div class="gcard"><div class="gchip" style="background:linear-gradient(135deg,#667EEA,#764BA2)"></div>#667EEA→#764BA2</div>
+      <div class="gcard"><div class="gchip" style="background:linear-gradient(135deg,#F093FB,#F5576C)"></div>#F093FB→#F5576C</div>
+      <div class="gcard"><div class="gchip" style="background:linear-gradient(135deg,#4FACFE,#00F2FE)"></div>#4FACFE→#00F2FE</div>
+      <div class="gcard"><div class="gchip" style="background:linear-gradient(135deg,#43E97B,#38F9D7)"></div>#43E97B→#38F9D7</div>
+      <div class="gcard"><div class="gchip" style="background:linear-gradient(135deg,#FA709A,#FEE140)"></div>#FA709A→#FEE140</div>
+      <div class="gcard"><div class="gchip" style="background:linear-gradient(135deg,#30CFD0,#330867)"></div>#30CFD0→#330867</div>
+    </div>
+    <div class="note">预览里可保留这 6 组渐变的卡片样式，但数量从 8 收敛到 6，并改用上方真实色值；主色由 <code style="font-family:var(--mono);color:var(--amber)">#9B8CFF</code> 改为 <code style="font-family:var(--mono);color:var(--purple)">#5B4FE0</code> / 暗色态 <code style="font-family:var(--mono);color:var(--purple)">#8B7FFF</code>，警告色由 <code style="font-family:var(--mono);color:var(--amber)">#FFB4A2</code> 改为 <code style="font-family:var(--mono);color:var(--amber)">#E08A1E</code>。</div>
+  </section>
+
+  <!-- ===== 6. 差异对照 ===== -->
+  <section>
+    <h2><span class="dot"></span>⑥ 当前 v2 预览 ↔ 真实代码 差异对照</h2>
+    <p class="desc">确认视觉风格保留，仅把架构/色值对齐到代码。下方为下一步改造清单。</p>
+    <table class="diff">
+      <thead><tr><th>维度</th><th>当前 v2 预览</th><th>真实代码</th><th>处理</th></tr></thead>
+      <tbody>
+        <tr><td>底部 Tab</td><td>联系人 / 保活 / 关于</td><td>People·Shield·Info 同三者</td><td><span class="pill ok">一致 ✓</span></td></tr>
+        <tr><td>添加/编辑</td><td>全屏子页</td><td>全屏 composable（无底栏）</td><td><span class="pill ok">一致 ✓</span></td></tr>
+        <tr><td>校准页</td><td class="chg">页内 8 步浮层</td><td>独立 NavHost 路由 calibration</td><td><span class="pill chg">改为独立页面</span></td></tr>
+        <tr><td>主紫</td><td class="chg">#9B8CFF</td><td>#5B4FE0 / 暗态 #8B7FFF</td><td><span class="pill chg">改色值</span></td></tr>
+        <tr><td>警告/第三色</td><td class="chg">#FFB4A2</td><td>#E08A1E Amber</td><td><span class="pill chg">改色值</span></td></tr>
+        <tr><td>Surface</td><td class="chg">#16151F</td><td>#1A1828</td><td><span class="pill chg">改色值</span></td></tr>
+        <tr><td>头像渐变</td><td class="chg">8 组</td><td>6 组</td><td><span class="pill chg">收敛到 6</span></td></tr>
+        <tr><td>浅色方案</td><td>仅示意</td><td>完整 LightColorScheme</td><td><span class="pill chg">补全浅色 token</span></td></tr>
+        <tr><td>数据字段</td><td>姓名 + 备注</td><td>name + wechatRemark 等 8 字段</td><td><span class="pill ok">一致 ✓</span></td></tr>
+        <tr><td>快捷方式图标</td><td>圆 + squircle</td><td>192px 圆渐变 + 尾字 + 绿徽标</td><td><span class="pill ok">风格一致 ✓</span></td></tr>
+      </tbody>
+    </table>
+    <div class="note">结论：<b>视觉语言（大字号、暗色优先、圆润卡片、绿色视频徽标）保留不变</b>；需要按上面 6 项把架构与色板对齐到代码。校准页从浮层改为独立路由页面是最大的一处结构改动。</div>
+  </section>
+
+  <footer>示意图基于只读读取的真实代码生成 · 项目文件未被任何修改 · 确认后据此改造 设计系统预览v2.html</footer>
+</div>
+</body>
+</html>

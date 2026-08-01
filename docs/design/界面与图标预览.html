@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>老人微信视频 · 高保真界面与图标预览（未集成）</title>
+<style>
+  :root{
+    --indigo:#4B43C9; --indigo-2:#6E66F0; --indigo-d:#3a33a0;
+    --teal:#10B59A; --teal-d:#0c9484;
+    --grad:linear-gradient(135deg,#5B53E0 0%,#4B43C9 58%,#3a33a0 100%);
+    --ink:#15161D; --sub:#8A8F9C; --hair:rgba(20,20,40,.06);
+    --surface:#FFFFFF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    background:
+      radial-gradient(820px 560px at 10% -6%, rgba(91,83,224,.16), transparent 55%),
+      radial-gradient(760px 520px at 96% 108%, rgba(16,181,154,.12), transparent 55%),
+      #F4F5FA;
+    color:var(--ink); padding:40px 20px 80px; line-height:1.5; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px; margin:0 auto}
+  .head{max-width:860px; margin:0 auto 30px}
+  h1{font-size:26px; margin:0 0 8px; letter-spacing:.3px; font-weight:700}
+  .lede{color:#5b6072; font-size:15px; margin:0 0 12px}
+  .pill{display:inline-flex; align-items:center; gap:7px; background:rgba(224,133,28,.10); border:1px solid rgba(224,133,28,.30);
+    color:#b06e14; font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px}
+  .board{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:28px; align-items:start}
+
+  /* ===== 展板面板 ===== */
+  .panel{background:var(--surface); border:1px solid var(--hair); border-radius:24px; padding:22px 20px 26px;
+    box-shadow:0 1px 2px rgba(16,18,40,.04), 0 18px 44px -30px rgba(40,30,90,.45)}
+  .panel h2{font-size:15px; margin:0 0 4px; display:flex; align-items:center; gap:9px; font-weight:700}
+  .tag{font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:rgba(75,67,201,.12); color:#7a72e6}
+  .panel .desc{font-size:12.5px; color:#777c90; margin:6px 2px 20px; min-height:34px}
+
+  /* ===== 手机 ===== */
+  .phone{width:320px; margin:0 auto; background:#0c0c14; border-radius:48px; padding:11px;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.06)}
+  .scr{height:688px; border-radius:38px; overflow:hidden; position:relative; display:flex; flex-direction:column;
+    background:linear-gradient(180deg,#F7F8FC 0%, #EEF0F7 100%)}
+  .notch{position:absolute; top:11px; left:50%; transform:translateX(-50%); width:92px; height:23px; background:#0c0c14; border-radius:999px; z-index:30}
+  .stbar{height:62px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 26px 9px;
+    font-size:13px; font-weight:600; color:var(--ink); z-index:20}
+  .stbar .sig{display:flex; align-items:center; gap:4px}
+  .stbar .sig i{width:4px; height:9px; background:var(--ink); border-radius:1px; display:block; opacity:.85}
+  .stbar .sig i:nth-child(2){height:12px} .stbar .sig i:nth-child(3){height:15px} .stbar .sig i:nth-child(4){height:18px}
+  .bat{width:22px; height:11px; border:1.5px solid var(--ink); border-radius:3px; position:relative; opacity:.85}
+  .bat::after{content:""; position:absolute; right:-3px; top:3px; width:2px; height:5px; background:var(--ink); border-radius:1px}
+  .bat::before{content:""; position:absolute; left:1.5px; top:1.5px; bottom:1.5px; width:13px; background:var(--ink); border-radius:1px}
+
+  /* 渐变应用栏（高级感：渐变 + 顶部柔光） */
+  .appbar{padding:18px 20px 20px; background:var(--grad); color:#fff; position:relative; overflow:hidden}
+  .appbar::after{content:""; position:absolute; left:-40px; top:-60px; width:200px; height:200px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.22), transparent 70%)}
+  .appbar .t{font-size:21px; font-weight:700; position:relative}
+  .appbar .s{font-size:11.5px; opacity:.92; margin-top:4px; position:relative; letter-spacing:.2px}
+
+  .body{flex:1; overflow:hidden; padding:16px 14px 0}
+  .chiprow{display:flex; align-items:center; justify-content:space-between; margin:2px 4px 14px}
+  .chiprow .h{font-size:14px; font-weight:700}
+  .addbtn{font-size:12px; font-weight:700; padding:7px 13px; border-radius:11px; border:none; background:rgba(75,67,201,.10); color:var(--indigo)}
+
+  /* 联系人卡片：垂直结构，子行稳定位于主行下方（修复错位） */
+  .card{background:#fff; border:1px solid var(--hair); border-radius:18px; padding:13px; margin-bottom:12px;
+    box-shadow:0 1px 2px rgba(16,18,40,.04), 0 12px 28px -20px rgba(40,30,90,.30); display:flex; flex-direction:column; gap:12px}
+  .card-top{display:flex; align-items:center; gap:12px}
+  .ava{width:52px; height:52px; border-radius:16px; flex:none; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:21px; box-shadow:0 8px 16px -8px rgba(0,0,0,.4)}
+  .cinfo{flex:1; min-width:0}
+  .cname{font-size:15px; font-weight:700; line-height:1.2}
+  .cwx{font-size:11.5px; color:var(--sub); margin-top:3px}
+  .callbtn{border:none; border-radius:13px; padding:10px 14px; font-size:12.5px; font-weight:700; color:#fff;
+    background:var(--grad); display:flex; align-items:center; gap:6px; box-shadow:0 10px 20px -10px rgba(75,67,201,.75); white-space:nowrap}
+  .card-bottom{display:flex; align-items:center; gap:10px; padding-top:11px; border-top:1px solid var(--hair)}
+  .pin{font-size:11.5px; color:var(--sub); flex:1; display:flex; align-items:center; gap:6px}
+  .toggle{width:42px; height:25px; border-radius:13px; background:var(--indigo); position:relative; flex:none; transition:background .2s}
+  .toggle .dot{position:absolute; top:3px; right:3px; width:19px; height:19px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .toggle.off{background:#d8dbe8}
+  .toggle.off .dot{right:auto; left:3px}
+  .editbtn{border:1px solid #dfe2ee; background:#fff; color:var(--indigo); font-size:12px; font-weight:600;
+    padding:7px 13px; border-radius:12px}
+
+  /* 底部胶囊导航 */
+  .nav{display:flex; border-top:1px solid rgba(40,30,90,.07); background:#fff; margin-top:auto;
+    padding:9px 8px 12px; gap:8px}
+  .nav .tab{flex:1; text-align:center; font-size:10px; padding:6px 0 4px; color:var(--sub); font-weight:600; letter-spacing:.4px;
+    border-radius:14px}
+  .nav .on{background:rgba(75,67,201,.10); color:var(--indigo)}
+  .nav .on::before{content:""; display:block; width:24px; height:24px; margin:0 auto 4px; border-radius:8px; background:var(--grad);
+    box-shadow:0 6px 14px -7px rgba(75,67,201,.8)}
+
+  /* ===== 快捷方式图标 ===== */
+  .icgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:26px 12px; place-items:center; margin-top:4px}
+  .tile{display:flex; flex-direction:column; align-items:center; gap:9px}
+  .ic{width:110px; height:110px; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:46px; box-shadow:0 14px 28px -10px rgba(0,0,0,.5)}
+  .ic .badge{position:absolute; right:1px; bottom:1px; width:40px; height:40px; border-radius:50%; background:#fff;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,.28)}
+  .ic .badge .dot{width:33px; height:33px; border-radius:50%; background:var(--teal); display:flex; align-items:center; justify-content:center}
+  .tile .lbl{font-size:12.5px; color:var(--ink); font-weight:700}
+  .tile .sub{font-size:10.5px; color:var(--sub); margin-top:-5px}
+
+  /* ===== 启动图标 ===== */
+  .launch{display:flex; gap:30px; align-items:flex-end; justify-content:center; flex-wrap:wrap; margin-top:6px}
+  .lpair{display:flex; flex-direction:column; align-items:center; gap:11px}
+  .adaptive{position:relative; border-radius:24px; overflow:hidden; box-shadow:0 22px 46px -18px rgba(40,30,90,.65)}
+  .adaptive .bg{position:absolute; inset:0; background:linear-gradient(135deg,#5B53E0 0%,#10B59A 100%)}
+  .adaptive .fg{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center}
+  .adaptive .fg svg{filter:drop-shadow(0 5px 10px rgba(0,0,0,.28))}
+  .lpair .cap{font-size:12px; color:var(--sub)}
+
+  .foot{margin:36px auto 0; max-width:860px; font-size:13px; color:#8b90a8; line-height:1.85}
+  .foot b{color:#5b6072}
+  .legend{margin-top:8px; font-size:12px; color:#777c90}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>老人微信视频 · 高保真界面与图标预览</h1>
+    <p class="lede">本稿为<strong>高保真预览</strong>，仅用于确认视觉与交互方向，<strong>尚未集成进工程</strong>。布局已修正、整体按「高级感」重做：克制留白、发丝描边＋极淡阴影、渐变应用栏、尾字大头像、清晰行动按钮。</p>
+    <span class="pill">⚠ 预览稿 · 不影响项目文件</span>
+  </div>
+
+  <div class="board">
+
+    <!-- 主屏「家人」 -->
+    <div class="panel">
+      <h2><span class="tag">界面 UI</span> 主屏 · 家人</h2>
+      <p class="desc">渐变应用栏 + 尾字大头像 + 显式「视频 / 固定到桌面 / 编辑」+ 底部胶囊导航。卡片子行稳定位于主行下方。</p>
+      <div class="phone"><div class="scr">
+        <div class="notch"></div>
+        <div class="stbar">
+          <span>9:41</span>
+          <span class="sig"><i></i><i></i><i></i><i></i></span>
+          <span class="bat"></span>
+        </div>
+        <div class="appbar"><div class="t">家人</div><div class="s">点一下头像直接视频 · 点行可设置</div></div>
+        <div class="body">
+          <div class="chiprow"><span class="h">共 3 位家人</span><button class="addbtn">+ 添加</button></div>
+
+          <div class="card">
+            <div class="card-top">
+              <div class="ava" style="background:linear-gradient(135deg,#667eea,#764ba2)">明</div>
+              <div class="cinfo"><div class="cname">张大明</div><div class="cwx">微信备注：大儿子</div></div>
+              <button class="callbtn">📹 视频</button>
+            </div>
+            <div class="card-bottom">
+              <span class="pin">📌 已固定到桌面</span>
+              <span class="toggle"><span class="dot"></span></span>
+              <button class="editbtn">编辑</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-top">
+              <div class="ava" style="background:linear-gradient(135deg,#F093FB,#F5576C)">花</div>
+              <div class="cinfo"><div class="cname">张小花</div><div class="cwx">微信备注：小棉袄</div></div>
+              <button class="callbtn">📹 视频</button>
+            </div>
+            <div class="card-bottom">
+              <span class="pin">📌 添加到桌面</span>
+              <span class="toggle off"><span class="dot"></span></span>
+              <button class="editbtn">编辑</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-top">
+              <div class="ava" style="background:linear-gradient(135deg,#30CFD0,#330867)">妈</div>
+              <div class="cinfo"><div class="cname">妈妈</div><div class="cwx">微信备注：妈妈</div></div>
+              <button class="callbtn">📹 视频</button>
+            </div>
+            <div class="card-bottom">
+              <span class="pin">📌 已固定到桌面</span>
+              <span class="toggle"><span class="dot"></span></span>
+              <button class="editbtn">编辑</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav">
+          <div class="tab on">家人</div>
+          <div class="tab">快捷</div>
+          <div class="tab">保活</div>
+          <div class="tab">关于</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 桌面快捷方式图标 -->
+    <div class="panel">
+      <h2><span class="tag">快捷图标</span> 桌面快捷方式</h2>
+      <p class="desc">圆形渐变底 + 名字最后一字 + 右下角绿色视频徽标。同姓 明/花/红 一眼区分。</p>
+      <div class="icgrid">
+        <div class="tile">
+          <div class="ic" style="background:linear-gradient(135deg,#667eea,#764ba2)">明
+            <span class="badge"><span class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><circle cx="9" cy="12" r="3.6"/><path d="M13.5 8.2l5.5 3.8-5.5 3.8z"/></svg></span></span>
+          </div>
+          <div class="lbl">张大明</div><div class="sub">→ 明</div>
+        </div>
+        <div class="tile">
+          <div class="ic" style="background:linear-gradient(135deg,#F093FB,#F5576C)">花
+            <span class="badge"><span class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><circle cx="9" cy="12" r="3.6"/><path d="M13.5 8.2l5.5 3.8-5.5 3.8z"/></svg></span></span>
+          </div>
+          <div class="lbl">张小花</div><div class="sub">→ 花</div>
+        </div>
+        <div class="tile">
+          <div class="ic" style="background:linear-gradient(135deg,#43E97B,#38F9D7)">红
+            <span class="badge"><span class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><circle cx="9" cy="12" r="3.6"/><path d="M13.5 8.2l5.5 3.8-5.5 3.8z"/></svg></span></span>
+          </div>
+          <div class="lbl">张小红</div><div class="sub">→ 红</div>
+        </div>
+        <div class="tile">
+          <div class="ic" style="background:linear-gradient(135deg,#30CFD0,#330867)">妈
+            <span class="badge"><span class="dot"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><circle cx="9" cy="12" r="3.6"/><path d="M13.5 8.2l5.5 3.8-5.5 3.8z"/></svg></span></span>
+          </div>
+          <div class="lbl">妈妈</div><div class="sub">→ 妈</div>
+        </div>
+      </div>
+      <p class="legend">徽标含义：白底绿点 = 一键视频呼叫。每位家人一个独立桌面图标。</p>
+    </div>
+
+    <!-- App 启动图标（自适应） -->
+    <div class="panel">
+      <h2><span class="tag">启动图标</span> App Launcher</h2>
+      <p class="desc">自适应图标：渐变背景层 + 白色视频通话前景。前景纯白，在不同形状蒙版下都清晰。</p>
+      <div class="launch">
+        <div class="lpair">
+          <div class="adaptive" style="width:110px; height:110px">
+            <div class="bg"></div>
+            <div class="fg">
+              <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="13" height="12" rx="3" fill="#fff" stroke="none"/>
+                <path d="M15 10l6-3.5v11L15 14z" fill="#fff" stroke="none"/>
+              </svg>
+            </div>
+          </div>
+          <div class="cap">108 px（标准）</div>
+        </div>
+        <div class="lpair">
+          <div class="adaptive" style="width:162px; height:162px">
+            <div class="bg"></div>
+            <div class="fg">
+              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="13" height="12" rx="3" fill="#fff" stroke="none"/>
+                <path d="M15 10l6-3.5v11L15 14z" fill="#fff" stroke="none"/>
+              </svg>
+            </div>
+          </div>
+          <div class="cap">162 px（展示）</div>
+        </div>
+      </div>
+      <p class="legend">背景层可换成品牌渐变；正式出稿需导出 foreground/background 两套 PNG（108/192/432 等密度）。</p>
+    </div>
+
+  </div>
+
+  <p class="foot">
+    <b>本预览包含：</b><br>
+    ① 主屏「家人」界面 UI —— 联系人卡片（主行：尾字头像 + 姓名备注 + 视频按钮；子行：固定到桌面 + 开关 + 编辑）＋ 底部胶囊导航。<br>
+    ② 桌面快捷方式图标 —— 尾字 + 圆形渐变 + 绿色视频徽标（同姓可区分）。<br>
+    ③ App 启动图标（自适应）—— 渐变背景 + 白色视频前景。<br><br>
+    <b>说明：</b>Ardot 设计画布在当前会话仍无法连接（后端 NO_ADAPTER，环境级问题），故先以本 HTML 高保真稿供你审阅；画布恢复后我会原样搬到 Ardot 并导出 PNG/SVG。本文件位于 <code>UI设计预览\</code>，独立于工程，可随时删除。
+  </p>
+</div>
+</body>
+</html>

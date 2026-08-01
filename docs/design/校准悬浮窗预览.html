@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>按键位置校准 · 悬浮窗 UI 预览（居中玻璃胶囊 v3）</title>
+<style>
+  :root{
+    --indigo:#4B43C9; --indigo-d:#3a33a0;
+    --teal:#10B59A; --teal-d:#0c9484;
+    --grad:linear-gradient(135deg,#5B53E0 0%,#4B43C9 58%,#3a33a0 100%);
+    --warn:#E0851C;
+    --danger:#E5484D;
+    --ink:#15161D; --sub:#6b7080;
+    --glass:rgba(248,247,255,.58);          /* 白/靛轻染 58% */
+    --glass-brd:rgba(255,255,255,.72);
+    --glass-shadow:0 14px 34px -16px rgba(40,30,90,.55);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    background:
+      radial-gradient(820px 560px at 10% -6%, rgba(91,83,224,.16), transparent 55%),
+      radial-gradient(760px 520px at 96% 108%, rgba(16,181,154,.12), transparent 55%),
+      #F4F5FA;
+    color:var(--ink); padding:40px 20px 80px; line-height:1.55; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px; margin:0 auto}
+  .head{max-width:880px; margin:0 auto 30px}
+  h1{font-size:26px; margin:0 0 8px; letter-spacing:.3px; font-weight:700}
+  .lede{color:#5b6072; font-size:15px; margin:0 0 12px}
+  .pill{display:inline-flex; align-items:center; gap:7px; background:rgba(75,67,201,.12); border:1px solid rgba(75,67,201,.30);
+    color:#6a62d8; font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px}
+  .pill.ok{background:rgba(16,181,154,.12); border-color:rgba(16,181,154,.30); color:var(--teal-d)}
+
+  .board{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:24px; align-items:start; margin-bottom:26px}
+  .panel{background:#fff; border:1px solid rgba(20,20,40,.07); border-radius:22px; padding:20px 18px 22px;
+    box-shadow:0 1px 2px rgba(16,18,40,.04), 0 18px 44px -30px rgba(40,30,90,.45)}
+  .panel h2{font-size:15px; margin:0 0 4px; display:flex; align-items:center; gap:9px; font-weight:700}
+  .tag{font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:rgba(75,67,201,.12); color:#7a72e6}
+  .panel .desc{font-size:12.5px; color:#777c90; margin:6px 2px 16px; min-height:30px}
+  .swrow{display:flex; flex-wrap:wrap; gap:12px}
+  .sw{width:96px; border-radius:14px; overflow:hidden; border:1px solid rgba(20,20,40,.07); box-shadow:0 6px 16px -10px rgba(0,0,0,.3)}
+  .sw .c{height:54px}
+  .sw .t{font-size:11px; padding:7px 9px; line-height:1.35; color:var(--ink); font-weight:600}
+  .sw .t small{display:block; color:var(--sub); font-weight:500; font-size:10px; margin-top:2px}
+  ul.spec{margin:8px 0 0; padding-left:18px}
+  ul.spec li{font-size:13px; color:#3a3d4a; margin:7px 0; line-height:1.6}
+  ul.spec li b{color:var(--indigo-d)}
+
+  .preview{background:#fff; border:1px solid rgba(20,20,40,.07); border-radius:24px; padding:24px 20px 28px;
+    box-shadow:0 18px 44px -30px rgba(40,30,90,.45); margin-bottom:26px}
+  .preview h2{font-size:17px; margin:0 0 4px; font-weight:700}
+  .preview .sub{font-size:13px; color:#777c90; margin:0 0 18px}
+  .stage{display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; justify-content:center}
+
+  .phone{width:320px; flex:none; background:#0c0c14; border-radius:46px; padding:11px;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.06); position:relative}
+  .scr{height:664px; border-radius:36px; overflow:hidden; position:relative; display:flex; flex-direction:column;
+    background:linear-gradient(180deg,#F7F8FC 0%, #EEF0F7 100%)}
+  .notch{position:absolute; top:11px; left:50%; transform:translateX(-50%); width:92px; height:23px; background:#0c0c14; border-radius:999px; z-index:60}
+  .stbar{height:54px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 24px 8px;
+    font-size:12px; font-weight:600; color:var(--ink); z-index:55}
+  .stbar .sig{display:flex; align-items:center; gap:3px}
+  .stbar .sig i{width:3px; height:8px; background:var(--ink); border-radius:1px; display:block; opacity:.8}
+  .stbar .sig i:nth-child(2){height:11px} .stbar .sig i:nth-child(3){height:14px} .stbar .sig i:nth-child(4){height:17px}
+  .bat{width:20px; height:10px; border:1.5px solid var(--ink); border-radius:3px; position:relative; opacity:.8}
+  .bat::after{content:""; position:absolute; right:-3px; top:2px; width:2px; height:4px; background:var(--ink); border-radius:1px}
+  .bat::before{content:""; position:absolute; left:1.5px; top:1.5px; bottom:1.5px; width:12px; background:var(--ink); border-radius:1px}
+
+  .wx{position:absolute; inset:0; z-index:10; display:flex; flex-direction:column}
+  .wx-top{height:96px; background:linear-gradient(180deg,#EDEFF5,#E4E7F0); border-bottom:1px solid #d8dbe6;
+    padding:46px 16px 0; display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:#33384a}
+  .wx-search{flex:1; background:#fff; border-radius:10px; height:32px; display:flex; align-items:center; justify-content:center;
+    color:#9aa0b0; font-size:13px; font-weight:500; box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .wx-body{flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:12px; overflow:hidden}
+  .bub{display:flex; gap:8px; align-items:flex-end}
+  .bub.me{flex-direction:row-reverse}
+  .bub .av{width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex:none}
+  .bub .msg{max-width:62%; background:#fff; border-radius:12px; padding:9px 12px; font-size:13px; color:#2a2e3a;
+    box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .bub.me .msg{background:#95EC69}
+  .wx-input{height:60px; background:#f6f7fb; border-top:1px solid #e3e6ef; display:flex; align-items:center; gap:10px; padding:0 14px}
+  .wx-plus{width:38px; height:38px; border-radius:50%; background:#fff; border:1px solid #dfe2ee; display:flex;
+    align-items:center; justify-content:center; font-size:22px; color:#5b6072; font-weight:300}
+
+  /* ===== 悬浮窗 v3：居中玻璃胶囊 ===== */
+  .ov{position:absolute; inset:0; z-index:40; pointer-events:none}
+
+  /* 取消：独立红色小圆浮标（常驻） */
+  .cancel-float{position:absolute; top:52px; right:14px; width:34px; height:34px; border-radius:50%;
+    background:var(--danger); color:#fff; border:none; font-size:16px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; z-index:50; pointer-events:auto;
+    box-shadow:0 6px 14px -6px rgba(229,72,77,.75)}
+
+  /* 步骤面板：居中悬浮玻璃胶囊 */
+  .guide{position:absolute; left:50%; transform:translateX(-50%); top:150px; width:274px;
+    background:var(--glass); backdrop-filter:blur(18px) saturate(1.7); -webkit-backdrop-filter:blur(18px) saturate(1.7);
+    border:1px solid var(--glass-brd); border-radius:20px; box-shadow:var(--glass-shadow);
+    padding:13px 15px 14px; pointer-events:auto}
+  .guide .accent{height:3px; width:46px; border-radius:999px; background:var(--grad); margin:0 auto 11px}
+  .guide .pbar{display:flex; gap:4px; margin-bottom:11px}
+  .guide .pbar .seg{height:5px; flex:1; border-radius:999px; background:rgba(120,120,150,.28); transition:.25s}
+  .guide .pbar .seg.done{background:var(--indigo)}
+  .guide .pbar .seg.cur{background:var(--teal); box-shadow:0 0 0 2px rgba(16,181,154,.25)}
+  .guide .toprow{display:flex; align-items:center; justify-content:space-between; margin-bottom:7px}
+  .guide .stepno{font-size:11px; font-weight:800; color:#fff; background:var(--grad); padding:2px 9px; border-radius:999px}
+  .phase{font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px}
+  .phase.guide{background:rgba(75,67,201,.16); color:var(--indigo)}
+  .phase.mark{background:rgba(16,181,154,.18); color:var(--teal-d)}
+  .guide .ins{font-size:14.5px; line-height:1.42; color:var(--ink); font-weight:700}
+  .guide .ins small{display:block; font-size:11.5px; color:var(--sub); font-weight:500; margin-top:2px}
+  .grow{display:flex; gap:8px; margin-top:11px}
+  .btn{border:none; border-radius:11px; font-size:13.5px; font-weight:700; padding:9px 12px; cursor:pointer; min-height:42px;
+    display:flex; align-items:center; justify-content:center; flex:1; transition:.16s; font-family:inherit; white-space:nowrap}
+  .btn.ghost{background:rgba(255,255,255,.72); color:var(--indigo); border:1.5px solid rgba(75,67,201,.4)}
+  .btn.ghost:active{background:rgba(75,67,201,.12)}
+  .btn.primary{background:var(--grad); color:#fff; box-shadow:0 7px 16px -9px rgba(75,67,201,.85)}
+  .btn.primary:active{transform:translateY(1px)}
+
+  /* 标记层：轻透（不再重模糊），落点挖洞透光 */
+  .markmask{position:absolute; inset:0; background:rgba(38,34,66,.10);
+    backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+    -webkit-mask-image:radial-gradient(circle 64px at 50% 50%, transparent 56px, #000 92px);
+    mask-image:radial-gradient(circle 64px at 50% 50%, transparent 56px, #000 92px);
+    z-index:42; pointer-events:auto; display:none}
+  .marker{position:absolute; width:84px; height:84px; transform:translate(-50%,-50%); z-index:44; display:none}
+  .marker .ring{position:absolute; inset:0; border:4px solid var(--teal); border-radius:50%; box-sizing:border-box;
+    box-shadow:0 0 0 2px rgba(255,255,255,.7); animation:pulse 1.4s ease-in-out infinite}
+  .marker .dot{position:absolute; top:50%; left:50%; width:9px; height:9px; background:var(--danger); border-radius:50%; transform:translate(-50%,-50%)}
+  .marker .cx{position:absolute; top:50%; left:50%; width:40px; height:2px; background:#fff; transform:translate(-50%,-50%)}
+  .marker .cy{position:absolute; top:50%; left:50%; width:2px; height:40px; background:#fff; transform:translate(-50%,-50%)}
+  .marker .coord{position:absolute; left:30px; top:-26px; background:rgba(0,0,0,.72); color:#fff; font-size:10.5px;
+    font-weight:700; padding:2px 6px; border-radius:7px; white-space:nowrap}
+  @keyframes pulse{0%,100%{transform:scale(1); opacity:1}50%{transform:scale(1.08); opacity:.82}}
+
+  /* 底部确认胶囊：居中轻量玻璃 */
+  .bottom{position:absolute; left:50%; transform:translateX(-50%); width:274px; bottom:16px;
+    background:var(--glass); backdrop-filter:blur(18px) saturate(1.7); -webkit-backdrop-filter:blur(18px) saturate(1.7);
+    border:1px solid var(--glass-brd); border-radius:18px; box-shadow:var(--glass-shadow); padding:12px 14px 13px; pointer-events:auto; display:none}
+  .bottom .bhint{font-size:11.5px; color:var(--sub); font-weight:700; margin-bottom:8px}
+  .bottom .brow{display:flex; gap:8px}
+  .btn.retry{background:rgba(255,255,255,.72); color:var(--warn); border:1.5px solid rgba(224,133,28,.45)}
+  .btn.confirm{background:var(--teal); color:#fff; box-shadow:0 7px 16px -9px rgba(16,181,154,.85)}
+
+  /* 完成卡：居中玻璃 */
+  .done{position:absolute; inset:0; z-index:46; display:none; align-items:center; justify-content:center; padding:16px}
+  .done .card{background:var(--glass); backdrop-filter:blur(20px) saturate(1.7); -webkit-backdrop-filter:blur(20px) saturate(1.7);
+    border:1px solid var(--glass-brd); border-radius:22px; box-shadow:var(--glass-shadow);
+    padding:22px 18px; width:280px; text-align:center; pointer-events:auto}
+  .done .check{width:58px; height:58px; border-radius:50%; background:rgba(16,181,154,.22); display:flex; align-items:center;
+    justify-content:center; margin:0 auto 10px}
+  .done .check svg{width:32px; height:32px}
+  .done h3{font-size:18px; margin:0 0 5px; color:var(--teal-d)}
+  .done p{font-size:12.5px; color:#5b6072; margin:0 0 12px; line-height:1.55}
+  .done .chips{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:12px}
+  .done .chip{font-size:11px; font-weight:700; background:rgba(75,67,201,.16); color:var(--indigo); padding:4px 10px; border-radius:999px}
+  .done .grow{margin-top:0}
+  .done .btn.ghost{background:rgba(255,255,255,.72);color:var(--teal-d);border:1.5px solid rgba(16,181,154,.45)}
+
+  .nav{display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; justify-content:center}
+  .nav button{width:46px; height:46px; border-radius:14px; border:1.5px solid rgba(20,20,40,.08); background:#fff; color:var(--sub);
+    font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s}
+  .nav button:hover{border-color:rgba(75,67,201,.4); color:var(--indigo)}
+  .nav button.on{background:var(--grad); color:#fff; border-color:transparent; box-shadow:0 8px 16px -8px rgba(75,67,201,.8)}
+  .nav button.done{background:var(--teal); color:#fff; border-color:transparent}
+  .nav .lbl{width:auto; padding:0 16px; border-radius:14px; font-size:13px}
+
+  .side{width:330px; flex:none}
+  .side .meta{background:#fff; border:1px solid rgba(20,20,40,.07); border-radius:18px; padding:16px 16px 18px;
+    box-shadow:0 12px 30px -26px rgba(40,30,90,.45); margin-bottom:16px}
+  .side .meta h3{font-size:14px; margin:0 0 8px; display:flex; align-items:center; gap:8px}
+  .side .meta .row{display:flex; justify-content:space-between; font-size:12.5px; padding:6px 0; border-bottom:1px dashed rgba(20,20,40,.08); color:#3a3d4a}
+  .side .meta .row:last-child{border-bottom:none}
+  .side .meta .row b{color:var(--indigo-d)}
+  .side .note{font-size:12px; color:#777c90; line-height:1.7; background:rgba(75,67,201,.05); border-radius:14px; padding:12px 14px}
+  .side .note b{color:var(--indigo-d)}
+
+  .specsec{background:#fff; border:1px solid rgba(20,20,40,.07); border-radius:22px; padding:24px 22px; margin-bottom:22px;
+    box-shadow:0 18px 44px -30px rgba(40,30,90,.4)}
+  .specsec h2{font-size:18px; margin:0 0 6px; font-weight:700; display:flex; align-items:center; gap:9px}
+  .specsec .lead{font-size:13.5px; color:#777c90; margin:0 0 16px}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+  .blk{background:#FAFBFE; border:1px solid rgba(20,20,40,.07); border-radius:16px; padding:15px 16px}
+  .blk h4{font-size:14px; margin:0 0 8px; color:var(--indigo-d)}
+  .blk p,.blk li{font-size:12.5px; color:#3a3d4a; line-height:1.65}
+  .blk ul{margin:0; padding-left:18px}
+  .pros{list-style:none; padding:0; margin:0}
+  .pros li{padding:10px 12px; border-radius:12px; background:#FAFBFE; border:1px solid rgba(20,20,40,.07); margin-bottom:10px; font-size:13px; line-height:1.6}
+  .pros li b{color:var(--indigo-d)}
+  .pros li.warn{border-color:rgba(224,133,28,.35); background:rgba(224,133,28,.07)}
+  .pros li.warn b{color:var(--warn)}
+  .pros li.bad{border-color:rgba(229,72,77,.35); background:rgba(229,72,77,.07)}
+  .pros li.bad b{color:var(--danger)}
+
+  .foot{margin:30px auto 0; max-width:880px; font-size:12.5px; color:#8b90a8; line-height:1.85}
+  .foot b{color:#5b6072}
+  .foot code{background:rgba(75,67,201,.08); padding:1px 6px; border-radius:6px; color:var(--indigo-d); font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>按键位置校准 · 悬浮窗 UI 预览 <span style="font-size:15px;color:#6a62d8">（居中玻璃胶囊 v3）</span></h1>
+    <p class="lede">按确认方向落地：<strong>步骤面板改为居中悬浮玻璃胶囊</strong>（白/靛轻染 58% + <code>blur(18px)</code>），标记层改为<strong>轻透、落点透光、不重模糊</strong>，取消做成独立红色小圆浮标。点击步骤切换预览。</p>
+    <span class="pill">✓ 居中玻璃胶囊</span>
+    <span class="pill ok" style="margin-left:8px">✓ 仅改动本文件夹</span>
+  </div>
+
+  <div class="board">
+    <div class="panel">
+      <h2><span class="tag">v3 方向</span> 只糊面板 · 更轻更小</h2>
+      <p class="desc">高斯模糊只用在步骤面板上；标记层保持通透，整体体积更小、留白更多。</p>
+      <ul class="spec">
+        <li><b>居中胶囊</b>：274px 宽悬浮芯片，不再拉满宽度，更像"浮起的玻璃片"。</li>
+        <li><b>带色调磨砂</b>：白/靛 58% + <code>blur(18px)</code>，透光有质感、文字清晰。</li>
+        <li><b>轻透标记层</b>：遮罩降至 10% + 微模糊，落点挖洞透光，便于对准。</li>
+        <li><b>独立取消</b>：右上角红色小圆浮标，任何步骤可中止。</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2><span class="tag">配色</span> 透出品牌</h2>
+      <p class="desc">玻璃近透明，强调色仍用品牌令牌，保证"还是这个 App"。</p>
+      <div class="swrow">
+        <div class="sw"><div class="c" style="background:var(--grad)"></div><div class="t">主操作<b>靛蓝渐变</b><small>#5B53E0→#3a33a0</small></div></div>
+        <div class="sw"><div class="c" style="background:var(--teal)"></div><div class="t">确认/标记<b>蓝绿</b><small>#10B59A</small></div></div>
+        <div class="sw"><div class="c" style="background:var(--warn)"></div><div class="t">重选<b>琥珀</b><small>#E0851C</small></div></div>
+        <div class="sw"><div class="c" style="background:var(--danger)"></div><div class="t">取消<b>红</b><small>#E5484D</small></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview">
+    <h2>① 交互预览（点击切换步骤）</h2>
+    <p class="sub">引导步：居中玻璃胶囊（进度细线 + 说明 + 上一步/下一步）；标记步：轻透标记层 + 落点透光 + 底部小确认胶囊；右上角红 ✕ 常驻。</p>
+    <div class="stage">
+      <div class="phone"><div class="scr">
+        <div class="notch"></div>
+        <div class="stbar"><span>9:41</span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="bat"></span></div>
+
+        <div class="wx">
+          <div class="wx-top"><span>微信</span><div class="wx-search">🔍 搜索</div></div>
+          <div class="wx-body">
+            <div class="bub"><div class="av">妈</div><div class="msg">今天身体怎么样？</div></div>
+            <div class="bub me"><div class="av">我</div><div class="msg">挺好的，晚上视频？</div></div>
+            <div class="bub"><div class="av">妈</div><div class="msg">好呀，七点吧</div></div>
+          </div>
+          <div class="wx-input"><div class="wx-plus">+</div><div style="flex:1;height:34px;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.05)"></div></div>
+        </div>
+
+        <div class="ov">
+          <button class="cancel-float" title="取消校准">✕</button>
+
+          <!-- 步骤面板：居中玻璃胶囊 -->
+          <div class="guide" id="guidePanel">
+            <div class="accent"></div>
+            <div class="pbar" id="pbar"></div>
+            <div class="toprow">
+              <span class="stepno" id="stepNo">步骤 1/10</span>
+              <span class="phase guide" id="phaseChip">引导</span>
+            </div>
+            <div class="ins" id="guideIns">请在微信中进入任意一个聊天对话<small>（点击任意联系人进入聊天页面）</small></div>
+            <div class="grow">
+              <button class="btn ghost" id="backBtn">上一步</button>
+              <button class="btn primary" id="nextBtn">我已进入聊天</button>
+            </div>
+          </div>
+
+          <div class="markmask" id="markMask"></div>
+          <div class="marker" id="marker">
+            <div class="ring"></div><div class="cx"></div><div class="cy"></div><div class="dot"></div>
+            <div class="coord" id="coordTxt">示例点</div>
+          </div>
+
+          <div class="bottom" id="bottomBar">
+            <div class="bhint" id="bottomHint">点击屏幕上「+」号按钮的位置</div>
+            <div class="brow">
+              <button class="btn retry">重新点选</button>
+              <button class="btn confirm">确认位置</button>
+            </div>
+          </div>
+
+          <div class="done" id="doneCard">
+            <div class="card">
+              <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#10B59A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+              <h3>校准完成！</h3>
+              <p>已记下 5 个微信按键位置，<br>以后拨号会自动使用。</p>
+              <div class="chips"><span class="chip">+ 号</span><span class="chip">视频通话</span><span class="chip">通话选项</span><span class="chip">搜索</span><span class="chip">结果行</span></div>
+              <div class="grow">
+                <button class="btn ghost">测试一次</button>
+                <button class="btn primary">返回应用</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="side">
+        <div class="meta">
+          <h3>📋 当前步骤参数</h3>
+          <div class="row"><span>步骤编号</span><b id="mStep">1 / 10</b></div>
+          <div class="row"><span>交互阶段</span><b id="mPhase">引导（Guide）</b></div>
+          <div class="row"><span>主按钮</span><b id="mBtn">我已进入聊天</b></div>
+          <div class="row"><span>面板形态</span><b id="mForm">居中玻璃胶囊</b></div>
+          <div class="row"><span>是否可取消</span><b id="mCancel">是（红 ✕ 浮标）</b></div>
+        </div>
+        <div class="note">
+          <b>v3 改动：</b>顶部满宽条 → 居中玻璃胶囊；标记层 20%→10% 遮罩、重模糊→微模糊；取消独立为右上角红圆浮标。体积更小、留白更多、玻璃感集中于步骤面板。
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="stepNav"></div>
+  </div>
+
+  <div class="specsec">
+    <h2>② 控件排列（居中玻璃胶囊）</h2>
+    <p class="lead">步骤面板=居中悬浮玻璃芯片；标记层=轻透 + 落点透光；取消=独立红圆浮标。</p>
+    <div class="grid2">
+      <div class="blk">
+        <h4>A. 步骤面板（居中玻璃胶囊）</h4>
+        <ul>
+          <li>顶部 3px 品牌渐变"点睛"线</li>
+          <li>5px 十段进度细线（完成靛蓝 / 当前蓝绿）</li>
+          <li>步骤徽标「X/10」+ 阶段胶囊「引导/标记」</li>
+          <li>说明 14.5sp + 灰字补充</li>
+          <li>按钮：「上一步」(靛蓝描边)+「下一步」(渐变)，高 42dp</li>
+        </ul>
+      </div>
+      <div class="blk">
+        <h4>B. 取消浮标（常驻）</h4>
+        <ul>
+          <li>右上角红色圆形 ✕，34dp（≥44dp 触控）</li>
+          <li>引导步 / 标记步均可见，任何时中止</li>
+        </ul>
+      </div>
+      <div class="blk">
+        <h4>C. 标记层（轻透）</h4>
+        <ul>
+          <li>遮罩 10% + 微模糊 <code>blur(4px)</code></li>
+          <li>落点径向挖洞(64px)透光 → 透出原按钮便于对准</li>
+          <li>标记环蓝绿 + 红精确点 + 白十字 + 坐标气泡</li>
+        </ul>
+      </div>
+      <div class="blk">
+        <h4>D. 底部确认胶囊（标记步）</h4>
+        <ul>
+          <li>居中 274px 轻量玻璃胶囊</li>
+          <li>提示行写明按钮名（如「+号按钮」）</li>
+          <li>「重新点选」(琥珀描边) +「确认位置」(蓝绿)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="specsec">
+    <h2>③ 设计规范 · 配色与交互逻辑</h2>
+    <p class="lead">玻璃集中于步骤面板；令牌与 App 一致。</p>
+    <div class="grid2">
+      <div class="blk">
+        <h4>配色令牌（玻璃 + 强调）</h4>
+        <ul>
+          <li>玻璃：白/靛 58% + <code>blur(18px)</code> + 白边 + 柔影</li>
+          <li>主操作/下一步：靛蓝渐变，白字</li>
+          <li>确认/标记环：蓝绿 #10B59A</li>
+          <li>重选：琥珀 #E0851C；取消：红 #E5484D</li>
+          <li>字号：说明 14.5sp / 步骤 11sp / 按钮 13.5sp</li>
+        </ul>
+      </div>
+      <div class="blk">
+        <h4>10 步交互逻辑（同前）</h4>
+        <ul>
+          <li><b>①引导</b>进聊天 →「我已进入聊天」</li>
+          <li><b>②标记</b>点「+」号 → 底部确认</li>
+          <li><b>③引导</b>开面板 →「面板已打开」</li>
+          <li><b>④标记</b>点「视频通话」图标 → 确认</li>
+          <li><b>⑤引导</b>开菜单 →「菜单已出现」</li>
+          <li><b>⑥标记</b>点「视频通话」选项 → 确认</li>
+          <li><b>⑦引导</b>回首页 →「我已回到首页」</li>
+          <li><b>⑧标记</b>点「搜索」 → 确认</li>
+          <li><b>⑨引导</b>搜索出结果 →「结果已出现」</li>
+          <li><b>⑩标记</b>点「结果行」 → 确认 → 完成</li>
+        </ul>
+      </div>
+    </div>
+    <div class="blk" style="margin-top:16px">
+      <h4>状态流转</h4>
+      <p>引导步：居中玻璃胶囊（进度+说明+按钮），隐藏标记层/底栏；完成微信操作后「下一步」推进，引导步可用「上一步」回退。<br>
+      标记步：隐藏胶囊，显示轻透标记层（落点透光）+ 底部确认胶囊；点屏生成标记→「确认位置」存坐标，「重新点选」清除。<br>
+      任意步：右上角红 ✕ 常驻可中止。<br>
+      完成：蓝绿对勾玻璃卡（已存5点 + 测试一次 + 返回应用）。</p>
+    </div>
+  </div>
+
+  <div class="specsec">
+    <h2>④ 设计建议（沿用 v1 审阅）</h2>
+    <p class="lead">P1–P7 问题清单与 O1–O4 优化方向不变（颜色割裂、标记步取消、无上一步、文案过时、无进度、引导栏遮挡、占位按钮；完成页友好、标记精准、容错、微信升级联动）。本 v3 仅调整视觉形态（居中玻璃胶囊 + 轻透标记层），问题清单仍有效。</p>
+    <ul class="pros">
+      <li class="bad"><b>P1 颜色割裂（高）：</b>现有实现用 Material 默认色，需替换为品牌令牌（本预览已统一）。</li>
+      <li class="bad"><b>P2 标记步无法取消（高）：</b>取消提至常驻红浮标，任何阶段可中止。</li>
+      <li class="bad"><b>P3 无返回纠错（中）：</b>增加「上一步」。</li>
+      <li class="warn"><b>P4 文案过时（中）：</b>strings 仍写「共 8 步」，需同步为 10 步。</li>
+      <li class="warn"><b>P5 无进度可视（中）：</b>已加十段进度细线。</li>
+      <li class="warn"><b>P6 引导栏遮挡（中）：</b>胶囊居中上移，不挡底部；仍建议补拖拽。</li>
+      <li class="warn"><b>P7 占位按钮迷惑（低）：</b>标记步隐藏胶囊主按钮。</li>
+      <li><b>O1 完成页对老人友好：</b>坐标折叠为高级详情。</li>
+      <li><b>O2 标记更精准：</b>遮罩降透明度 + 蓝绿环。</li>
+      <li><b>O3 容错提示：</b>未点选弹 Toast；坐标异常提示重选。</li>
+      <li><b>O4 微信升级联动：</b>完成卡记录版本号，升级后提示重校准。</li>
+    </ul>
+  </div>
+
+  <p class="foot">
+    <b>本预览包含：</b>① 10 步可交互居中玻璃胶囊预览 ② 控件排列 ③ 配色令牌与交互逻辑 ④ 设计建议。<br>
+    <b>范围与一致性：</b>仅写入 <code>UI设计预览\按键位置校准UI\</code>，未改动 <code>3(WXdianhua)</code> 工程（仅读取）。品牌令牌与 <code>3(WXdianhua)\UI设计预览\index.html</code> 一致。<br>
+    <b>说明：</b>Ardot 画布暂不可连（后端 NO_ADAPTER，环境级），以 HTML 高保真稿交付；画布恢复后迁入导出 PNG/SVG。标记步"轻透 + 落点挖洞"对应真机 <code>TapMarkView</code> 的轻遮罩 + PorterDuff 透明挖孔。
+  </p>
+</div>
+
+<script>
+  const STEPS = [
+    {n:1, phase:'guide', ins:'请在微信中进入任意一个聊天对话', sub:'（点击任意联系人进入聊天页面）', next:'我已进入聊天', marker:null},
+    {n:2, phase:'mark',  ins:'请点击屏幕上「+」号按钮的位置', sub:'（聊天页右下角的加号按钮）', next:'确认位置', marker:{x:88,y:90,label:'+ 号按钮'}},
+    {n:3, phase:'guide', ins:'请手动点击聊天页的「+」号按钮', sub:'打开功能面板（视频通话、图片等图标）', next:'面板已打开', marker:null},
+    {n:4, phase:'mark',  ins:'请点击功能面板中「视频通话」图标的位置', sub:'（面板里的摄像机图标）', next:'确认位置', marker:{x:50,y:62,label:'视频通话图标'}},
+    {n:5, phase:'guide', ins:'请手动点击「视频通话」图标', sub:'打开选择菜单（视频通话 / 语音通话）', next:'菜单已出现', marker:null},
+    {n:6, phase:'mark',  ins:'请点击菜单中「视频通话」选项的位置', sub:'（弹出菜单里左边的视频通话选项）', next:'确认位置', marker:{x:46,y:55,label:'视频通话选项'}},
+    {n:7, phase:'guide', ins:'请返回微信首页', sub:'（按返回键退出聊天，回到有「微信」「通讯录」的页面）', next:'我已回到首页', marker:null},
+    {n:8, phase:'mark',  ins:'请点击屏幕顶部「搜索」按钮的位置', sub:'（首页顶部放大镜图标或搜索栏）', next:'确认位置', marker:{x:50,y:14,label:'搜索按钮'}},
+    {n:9, phase:'guide', ins:'请点击「搜索」，输入联系人名字', sub:'让【联系人】列表显示出来（不要点开公众号）', next:'结果已出现', marker:null},
+    {n:10,phase:'mark',  ins:'请点击屏幕上【联系人结果行】的位置', sub:'（搜索结果列表中任意一行，不是公众号）', next:'确认位置', marker:{x:50,y:48,label:'联系人结果行'}}
+  ];
+
+  const $ = id => document.getElementById(id);
+  const pbar = $('pbar');
+  const nav = $('stepNav');
+
+  STEPS.forEach(()=>{
+    const seg=document.createElement('div'); seg.className='seg'; pbar.appendChild(seg);
+  });
+  STEPS.forEach((s)=>{
+    const b=document.createElement('button'); b.textContent=s.n; b.onclick=()=>render(s.n); nav.appendChild(b);
+  });
+  const bDone=document.createElement('button'); bDone.textContent='完成'; bDone.className='lbl'; bDone.onclick=()=>render(11); nav.appendChild(bDone);
+
+  function render(n){
+    $('guidePanel').style.display='none';
+    $('markMask').style.display='none';
+    $('marker').style.display='none';
+    $('bottomBar').style.display='none';
+    $('doneCard').style.display='none';
+
+    STEPS.forEach((s,i)=>{
+      const seg=pbar.children[i];
+      seg.className='seg'+(s.n<n?' done':'')+(s.n===n?' cur':'');
+    });
+    [...nav.children].forEach((c,i)=>{
+      c.classList.remove('on','done');
+      if(n<=10 && i===n-1) c.classList.add('on');
+      if(n>10 && i===10) c.classList.add('done');
+    });
+
+    if(n>10){
+      $('stepNo').textContent='已完成';
+      $('phaseChip').textContent='完成'; $('phaseChip').className='phase mark';
+      $('doneCard').style.display='flex';
+      $('mStep').textContent='10 / 10 ✓'; $('mPhase').textContent='完成'; $('mBtn').textContent='—'; $('mForm').textContent='玻璃完成卡';
+      return;
+    }
+
+    const s=STEPS[n-1];
+    $('stepNo').textContent='步骤 '+n+'/10';
+    const ph=s.phase==='guide'?'引导':'标记';
+    $('phaseChip').textContent=ph; $('phaseChip').className='phase '+s.phase;
+    $('mStep').textContent=n+' / 10';
+    $('mPhase').textContent=ph+'（'+(s.phase==='guide'?'Guide':'Mark')+'）';
+
+    if(s.phase==='guide'){
+      $('guidePanel').style.display='block';
+      $('guideIns').innerHTML=s.ins+'<small>'+(s.sub||'')+'</small>';
+      $('nextBtn').textContent=s.next;
+      $('backBtn').style.visibility = n>1 ? 'visible':'hidden';
+      $('mBtn').textContent=s.next; $('mForm').textContent='居中玻璃胶囊';
+    }else{
+      $('markMask').style.display='block';
+      $('bottomBar').style.display='block';
+      $('bottomHint').textContent='点击屏幕上【'+(s.marker? s.marker.label:'按钮')+'】的位置';
+      const m=$('marker');
+      if(s.marker){
+        m.style.display='block';
+        m.style.left=s.marker.x+'%'; m.style.top=s.marker.y+'%';
+        $('markMask').style.webkitMaskImage='radial-gradient(circle 64px at '+s.marker.x+'% '+s.marker.y+'%, transparent 56px, #000 92px)';
+        $('markMask').style.maskImage='radial-gradient(circle 64px at '+s.marker.x+'% '+s.marker.y+'%, transparent 56px, #000 92px)';
+        $('coordTxt').textContent='示例点 · '+s.marker.label;
+      }
+      $('mBtn').textContent='确认位置（底部）'; $('mForm').textContent='轻透+落点透光';
+    }
+  }
+  render(1);
+</script>
+</body>
+</html>
