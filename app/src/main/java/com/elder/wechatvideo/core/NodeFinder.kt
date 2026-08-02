@@ -171,7 +171,10 @@ class NodeFinder {
     }
 
     fun hasChatSessionIndicator(root: AccessibilityNodeInfo): Boolean {
-        return treeContainsAny(root, listOf("视频通话", "语音通话", "说点什么", "发送", "音视频通话", "设置备注和标签"))
+        // P2 修复：移除"发送"——搜索页"发送给朋友""朋友圈"等场景也包含此词，
+        // 点击联系人未生效仍停留在搜索页时会误判为已进入聊天页。
+        // 保留的文案均为聊天页独有特征，搜索结果页不会出现。
+        return treeContainsAny(root, listOf("视频通话", "语音通话", "说点什么", "音视频通话", "设置备注和标签"))
     }
 
     /* ===================== 工具方法 ===================== */
@@ -221,10 +224,10 @@ class NodeFinder {
         while (stack.isNotEmpty()) {
             val node = stack.removeFirst()
             val t = node.text?.toString() ?: ""
-            // 子串匹配（与 treeContainsAny 口径一致）：
-            // 微信分段标题可能带数量/尾空格（如"公众号 2"），精确匹配会漏识别，
-            // 导致区间下限缺失 → 公众号行落入"联系人"区间 → 误点。
-            if (allHeaders.any { it in t }) {
+            // 精确匹配或"标题 + 空格 + 数量"格式（如"联系人 3""公众号 2"）：
+            // 原子串匹配会误命中"没有联系人匹配结果""联系人推荐"等非标题文本，
+            // 导致分段区间错误 → 联系人被划入错误区间或公众号行落入联系人区间。
+            if (allHeaders.any { isSectionHeader(t, it) }) {
                 val rect = Rect()
                 node.getBoundsInScreen(rect)
                 found.add(t to rect.top.toFloat())
@@ -236,6 +239,23 @@ class NodeFinder {
             if (node !== root) node.recycle()
         }
         return found
+    }
+
+    /**
+     * 判断文本 [text] 是否为分段标题 [header]。
+     *
+     * 匹配规则：整行文本等于标题，或"标题 + 空格 + 数字"格式（微信分段标题带数量）。
+     * 不使用子串匹配，避免"没有联系人匹配结果""联系人推荐"等文本被误识别。
+     */
+    private fun isSectionHeader(text: String, header: String): Boolean {
+        if (text == header) return true
+        // 兼容 "联系人 3""公众号 2" 等带空格+数量的格式
+        if (text.startsWith(header)) {
+            val remainder = text.substring(header.length)
+            // 余下部分应为空白字符 + 可选数字（如 " 3"、"\t2"）
+            return remainder.matches(Regex("\\s*\\d*")) && remainder.isNotBlank()
+        }
+        return false
     }
 
     private fun isWithinBounds(node: AccessibilityNodeInfo, bounds: Pair<Float, Float>): Boolean {

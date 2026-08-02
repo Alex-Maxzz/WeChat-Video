@@ -152,6 +152,11 @@ class CallStateMachine {
     /**
      * 落点校验失败兜底：清空搜索相关计数与标志并回到搜索状态，
      * 保留 callStartTime（总超时继续累计，防止兜底重试绕过总时限）。
+     *
+     * P2 修复：同时重置 plusButtonClicked / videoCallClicked / videoConfirmClicked /
+     * plusButtonRetries，确保从落点校验返回搜索后，后续 + 按钮/视频/确认流程从干净状态开始。
+     * 当前流程中这些标志在 VERIFYING_LANDING 阶段尚未被设置，但补全重置可防止未来
+     * 流程变更后遗漏导致的隐性 bug。
      */
     fun restartSearch() {
         synchronized(lock) {
@@ -159,9 +164,13 @@ class CallStateMachine {
             searchEditTextRetries = 0
             searchResultAttempts = 0
             landingVerifyAttempts = 0
+            plusButtonRetries = 0
             searchButtonClicked = false
             searchTextChanged = false
             usedAccessibilityFallback = false
+            plusButtonClicked = false
+            videoCallClicked = false
+            videoConfirmClicked = false
         }
         transitionTo(State.SEARCHING_CONTACT)
     }

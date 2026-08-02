@@ -7,12 +7,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.provider.Settings
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.elder.wechatvideo.ElderWeChatApp
 import com.elder.wechatvideo.MainActivity
 import com.elder.wechatvideo.R
+import com.elder.wechatvideo.service.WeChatAccessibilityService
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -27,6 +33,8 @@ import dagger.hilt.android.AndroidEntryPoint
  * - 服务被系统杀死后会自动重建（[Service.START_STICKY]）。
  * - 用户从最近任务划掉应用时，[onTaskRemoved] 会主动重启服务，保活不中断。
  * - 通过 [startService] / [stopService] 便捷控制服务的启停。
+ * - 每 5 分钟检查 [WeChatAccessibilityService.isConnected]，断开时发送通知
+ *   引导用户重新开启无障碍服务（P0-2 修复：主动监控替代被动拨号时才发现）。
  *
  * 前台服务类型为 [ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE]，
  * 在 AndroidManifest 中已声明 `foregroundServiceType="specialUse"` 及对应的
@@ -35,12 +43,38 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class KeepAliveService : Service() {
 
+    /** 健康检查 Handler（主线程） */
+    private val healthHandler = Handler(Looper.getMainLooper())
+
+    /** 是否已发送过无障碍断开告警（避免重复通知，服务恢复后自动重置） */
+    @Volatile
+    private var healthAlertShown = false
+
+    /** 无障碍服务健康检查定时任务 */
+    private val healthChecker = object : Runnable {
+        override fun run() {
+            checkAccessibilityHealth()
+            healthHandler.postDelayed(this, HEALTH_CHECK_INTERVAL)
+        }
+    }
+
     companion object {
+        private const val TAG = "KeepAliveService"
+
         /** 前台通知 ID（固定值，用于标识保活通知） */
         private const val NOTIFICATION_ID = 1001
 
+        /** 健康告警通知 ID（与保活通知分开，可单独取消） */
+        private const val HEALTH_NOTIFICATION_ID = 1002
+
         /** PendingIntent 请求码 */
         private const val REQUEST_CODE = 0
+
+        /** 健康检查通知的 PendingIntent 请求码 */
+        private const val HEALTH_REQUEST_CODE = 1
+
+        /** 无障碍服务健康检查间隔（5 分钟） */
+        private const val HEALTH_CHECK_INTERVAL = 5 * 60 * 1000L
 
         /**
          * 服务运行状态标志：onCreate 时置 true，onDestroy 时置 false。
@@ -85,6 +119,8 @@ class KeepAliveService : Service() {
         isRunning = true
         // 服务创建时立即启动前台通知，满足 startForegroundService 的 5 秒时限要求
         startForegroundNotification()
+        // 启动无障碍服务健康检查
+        startHealthCheck()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -98,6 +134,7 @@ class KeepAliveService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         isRunning = false
+        stopHealthCheck()
     }
 
     /**
@@ -170,5 +207,78 @@ class KeepAliveService : Service() {
             Notification.FLAG_ONGOING_EVENT
 
         return notification
+    }
+
+    /* ===================== 无障碍服务健康检查 ===================== */
+
+    /**
+     * 启动无障碍服务健康检查定时任务。
+     *
+     * 每 [HEALTH_CHECK_INTERVAL] 毫秒检查一次 [WeChatAccessibilityService.isConnected]，
+     * 若发现断开则发送通知引导用户重新开启。
+     */
+    private fun startHealthCheck() {
+        healthHandler.postDelayed(healthChecker, HEALTH_CHECK_INTERVAL)
+        Log.i(TAG, "无障碍服务健康检查已启动，间隔 ${HEALTH_CHECK_INTERVAL / 1000} 秒")
+    }
+
+    /**
+     * 停止健康检查，清理 Handler 回调。
+     */
+    private fun stopHealthCheck() {
+        healthHandler.removeCallbacks(healthChecker)
+    }
+
+    /**
+     * 检查无障碍服务连接状态。
+     *
+     * - 断开且尚未告警 → 发送通知，标记已告警
+     * - 恢复连接且已告警 → 取消通知，重置标记
+     */
+    private fun checkAccessibilityHealth() {
+        val connected = WeChatAccessibilityService.isConnected
+        if (!connected && !healthAlertShown) {
+            Log.w(TAG, "无障碍服务已断开，发送告警通知")
+            sendHealthNotification()
+            healthAlertShown = true
+        } else if (connected && healthAlertShown) {
+            Log.i(TAG, "无障碍服务已恢复连接，取消告警通知")
+            NotificationManagerCompat.from(this).cancel(HEALTH_NOTIFICATION_ID)
+            healthAlertShown = false
+        }
+    }
+
+    /**
+     * 发送无障碍服务断开告警通知。
+     *
+     * 通知点击后跳转到系统无障碍设置页，引导用户重新开启服务。
+     * 使用 [ElderWeChatApp.CHANNEL_ID] 渠道（IMPORTANCE_LOW），不发出声音。
+     */
+    private fun sendHealthNotification() {
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            HEALTH_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notification = NotificationCompat.Builder(this, ElderWeChatApp.CHANNEL_ID)
+            .setContentTitle(getString(R.string.notification_health_title))
+            .setContentText(getString(R.string.notification_health_text))
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        try {
+            NotificationManagerCompat.from(this).notify(HEALTH_NOTIFICATION_ID, notification)
+        } catch (e: SecurityException) {
+            // 某些设备可能未授予通知权限，忽略
+            Log.w(TAG, "发送健康告警通知失败", e)
+        }
     }
 }

@@ -35,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 微信无障碍服务 —— 薄胶水层（V1.3.0 重构）。
@@ -121,6 +122,19 @@ class WeChatAccessibilityService : AccessibilityService() {
     private var landingRetryUsed = false
 
     /**
+     * OCR 进行中标志：防止 timeoutChecker 在 OCR 期间触发搜索重试导致竞态。
+     *
+     * 竞态场景：OCR 耗时超过 SEARCH_STATE_TIMEOUT(15s) 时，timeoutChecker 触发
+     * resetSearchForRetry + trySearchContact，新搜索开始后 OCR 协程完成，
+     * sm.isActive 仍为 true → OCR 点击旧搜索结果坐标 → 点错联系人。
+     *
+     * 修复：OCR 期间置 true，timeoutChecker 检测到此标志时跳过搜索重试
+     * （总超时仍可触发 fail，确保不会无限等待）。
+     */
+    @Volatile
+    private var ocrInProgress = false
+
+    /**
      * 统一存活检查的延迟调度：回调执行前先确认服务仍连接、实例未被替换、状态机仍活跃，
      * 不满足则直接丢弃，避免服务销毁/呼叫结束后残留回调触碰已失效对象。
      * 仅用于「流程续接」类回调；收尾清理类回调（overlay.hide + resetToIdle）不走此方法，
@@ -141,13 +155,21 @@ class WeChatAccessibilityService : AccessibilityService() {
         instance = this
         overlay = OverlayController(this)
         overlay.onCancelClick = { cancelCall() }
-        Log.i(TAG, "无障碍服务已连接")
+        // P0 修复：服务重连时清除可能残留的 pendingCall。
+        // 场景：服务在呼叫过程中崩溃，Android 不保证调用 onDestroy()，
+        // pendingCall 永久为 true → 服务重启后所有新呼叫被 startCall() 拒绝（死锁）。
+        // onServiceConnected 是服务重建后的第一个回调，在此重置可保证恢复到干净状态。
+        pendingCall = false
+        targetContactName = ""
+        Log.i(TAG, "无障碍服务已连接，pendingCall 已重置")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         isConnected = false
         instance = null
+        pendingCall = false
+        targetContactName = ""
         scope.cancel()
         handler.removeCallbacksAndMessages(null)
         if (::overlay.isInitialized) overlay.destroy()
@@ -158,6 +180,7 @@ class WeChatAccessibilityService : AccessibilityService() {
         if (::overlay.isInitialized) overlay.hide()
         sm.resetToIdle()
         pendingCall = false
+        targetContactName = ""
     }
 
     /* ===================== 事件入口 ===================== */
@@ -299,7 +322,9 @@ class WeChatAccessibilityService : AccessibilityService() {
         // 第2层：OCR 精准识别（按名字找人，不会点错）
         handler.removeCallbacksAndMessages(null) // 清空搜索重试回调，防止抢先触发
         startTimeoutChecker() // 恢复超时保护（OCR 期间仍需超时兜底）
+        ocrInProgress = true // P0 修复：阻止 timeoutChecker 在 OCR 期间触发搜索重试
         scope.launch {
+            try {
             val ocrEnabled = com.elder.wechatvideo.util.SettingsPrefs.isOcrEnabled(applicationContext)
             val strictMode = com.elder.wechatvideo.util.SettingsPrefs.isOcrStrictMode(applicationContext)
 
@@ -308,11 +333,16 @@ class WeChatAccessibilityService : AccessibilityService() {
 
             var ocrFound = false
             if (ocrEnabled) {
-                val pos = OcrHelper.findContactPosition(
-                    this@WeChatAccessibilityService,
-                    targetContactName
-                )
-                if (pos != null && sm.isActive) {
+                // P1 修复：OCR 截图处理和文本匹配在 Default 线程执行，
+                // 避免 allLines 遍历在主线程造成卡顿（搜索结果多时尤其明显）。
+                val pos = withContext(Dispatchers.Default) {
+                    OcrHelper.findContactPosition(
+                        this@WeChatAccessibilityService,
+                        targetContactName
+                    )
+                }
+                // P0 修复：OCR 完成后校验状态未变（未被 timeoutChecker/fail 重置）
+                if (pos != null && sm.isActive && sm.state == State.SEARCHING_CONTACT) {
                     ocrFound = true
                     gestureClickAt(pos.first, pos.second)
                     showProgress("③ 已点击联系人（OCR），校验落点…")
@@ -321,7 +351,7 @@ class WeChatAccessibilityService : AccessibilityService() {
                 }
             }
 
-            if (!ocrFound && sm.isActive) {
+            if (!ocrFound && sm.isActive && sm.state == State.SEARCHING_CONTACT) {
                 if (ocrEnabled && strictMode) {
                     fail("未找到联系人「$targetContactName」，已安全中止")
                     return@launch
@@ -335,6 +365,9 @@ class WeChatAccessibilityService : AccessibilityService() {
                 } else {
                     fail("未找到联系人「$targetContactName」，已安全中止")
                 }
+            }
+            } finally {
+                ocrInProgress = false
             }
         }
         } finally {
@@ -416,7 +449,10 @@ class WeChatAccessibilityService : AccessibilityService() {
             return
         }
 
-        val root = rootInActiveWindow ?: return
+        val root = rootInActiveWindow ?: run {
+            postDelayedSafely(800) { if (sm.state == State.CLICKING_CONTACT) tryClickPlusButton() }
+            return
+        }
         try {
         val screenHeight = resources.displayMetrics.heightPixels
         val plusNode = nodeFinder.findPlusButton(root, screenHeight)
@@ -449,7 +485,10 @@ class WeChatAccessibilityService : AccessibilityService() {
             return
         }
 
-        val root = rootInActiveWindow ?: return
+        val root = rootInActiveWindow ?: run {
+            postDelayedSafely(800) { if (sm.state == State.CLICKING_PLUS) tryClickVideoCall() }
+            return
+        }
         try {
         val videoNode = nodeFinder.findVideoCallButton(root)
         if (videoNode != null) {
@@ -511,7 +550,10 @@ class WeChatAccessibilityService : AccessibilityService() {
                     return
                 }
                 when (sm.state) {
-                    State.SEARCHING_CONTACT -> { sm.resetSearchForRetry(); trySearchContact() }
+                    // P0 修复：OCR 进行中时跳过搜索重试，防止竞态导致点错联系人
+                    State.SEARCHING_CONTACT -> {
+                        if (!ocrInProgress) { sm.resetSearchForRetry(); trySearchContact() }
+                    }
                     State.CLICKING_CONTACT -> tryClickPlusButton()
                     State.CLICKING_PLUS -> tryClickVideoCall()
                     State.CLICKING_VIDEO -> tryClickVideoConfirm()

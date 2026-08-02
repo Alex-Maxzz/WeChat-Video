@@ -158,6 +158,24 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.6.6",
+            date = "2026-08-03",
+            changes = "· 修复 OCR 与超时检查器竞态（P0）：OCR 期间阻止 timeoutChecker 触发搜索重试，OCR 完成后校验状态未变才执行点击，杜绝点错联系人\n· 修复分段标题子串匹配误命中：\"联系人\"子串会误命中\"没有联系人匹配结果\"等文本，改为精确匹配+\"标题 空格 数字\"格式\n· 修复聊天页判断过于宽泛：移除\"发送\"关键词，避免搜索页\"发送给朋友\"误判为已进入聊天页"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
+            version = "V1.6.5",
+            date = "2026-08-03",
+            changes = "· 修复 pendingCall 死锁：服务崩溃重启后 onServiceConnected 重置 pendingCall，不再永久拒绝新呼叫\n· 新增无障碍服务健康监控：保活服务每 5 分钟检测连接状态，断开时主动通知用户重新开启\n· 修复 + 按钮和视频通话步骤 root 为 null 时不重试，避免白白等待超时\n· OCR 文本匹配切到 Default 线程，搜索结果多时不再卡主线程\n· restartSearch() 补全按钮/视频/确认标志位重置，防止未来流程变更遗漏"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
+            version = "V1.6.4",
+            date = "2026-08-02",
+            changes = "· 修复搜索结果误点公众号：分段标题检测改为子串匹配，\"公众号 2\"等不再漏识别\n· 修复 OCR 永远不执行：第1层节点查找假成功导致 OCR 被跳过\n· OCR 新增分段上下文校验：非联系人分段下的匹配行自动跳过\n· 修复 OCR 期间无超时保护：恢复 startTimeoutChecker"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.6.3",
             date = "2026-08-02",
             changes = "· 修复 OCR 严格模式失效：搜索框文本被误判为联系人结果\n· OCR 匹配逻辑与无障碍节点查找对齐（精确/前缀），排除搜索框区域\n· 新增 22 项单元测试覆盖核心匹配场景\n· 重启后拨号不再误报\"未开启\"：无障碍检查改为 500ms×6 次重试，等待系统恢复绑定"

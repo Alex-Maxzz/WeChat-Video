@@ -74,6 +74,8 @@
     <string name="notification_channel_desc">保持应用在后台运行，确保一键视频可用</string>
     <string name="notification_title">一键视频正在运行</string>
     <string name="notification_text">一键视频正在后台守护，可放心使用</string>
+    <string name="notification_health_title">无障碍服务需要重新开启</string>
+    <string name="notification_health_text">自动拨号功能需要无障碍服务才能工作，点击重新开启</string>
 
     <!-- 通用 -->
     <string name="confirm">确定</string>
