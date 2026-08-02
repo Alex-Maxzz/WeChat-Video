@@ -158,6 +158,18 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.6.8",
+            date = "2026-08-03",
+            changes = "· 修复聊天页判断假阴性：底部输入框检测阈值从 0.6 降至 0.4（屏幕下方60%），兜底键盘弹起场景（键盘占屏50%时输入框被顶到44%不再漏判）\n· 修复 OCR 分段标题匹配不一致：OcrHelper 仍用子串匹配会误识别\"没有联系人匹配结果\"为联系人标题，改为与 NodeFinder 一致的精确匹配"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
+            version = "V1.6.7",
+            date = "2026-08-03",
+            changes = "· 聊天页检测改多层方案：content-desc 关键词 + 底部 EditText 结构检测，不再依赖\"视频通话\"等微信可变文案\n· 分段标题检测改精确匹配：\"标题+空格+数字\"格式，避免子串误命中非标题文本"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.6.6",
             date = "2026-08-03",
             changes = "· 修复 OCR 与超时检查器竞态（P0）：OCR 期间阻止 timeoutChecker 触发搜索重试，OCR 完成后校验状态未变才执行点击，杜绝点错联系人\n· 修复分段标题子串匹配误命中：\"联系人\"子串会误命中\"没有联系人匹配结果\"等文本，改为精确匹配+\"标题 空格 数字\"格式\n· 修复聊天页判断过于宽泛：移除\"发送\"关键词，避免搜索页\"发送给朋友\"误判为已进入聊天页"

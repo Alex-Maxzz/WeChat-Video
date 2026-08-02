@@ -628,6 +628,11 @@ class WeChatAccessibilityService : AccessibilityService() {
         showProgress("✗ $reason")
         showToast(reason)
         handler.removeCallbacks(timeoutChecker)
-        handler.postDelayed({ overlay.hide(); sm.resetToIdle(); pendingCall = false; targetContactName = "" }, 3000)
+        // V1.6.5 修复：立即清除 pendingCall，允许用户重试。
+        // 之前 pendingCall 延迟 3 秒才清除，期间 CallBridgeActivity 的 6 次重试全部被拒，
+        // 报"无障碍服务启动中，请稍后再试"。
+        pendingCall = false
+        targetContactName = ""
+        handler.postDelayed({ overlay.hide(); sm.resetToIdle() }, 3000)
     }
 }

@@ -204,7 +204,7 @@
 <div class="header">
   <h1>一键视频</h1>
   <div class="subtitle">老人微信视频通话一键拨打工具 · 版本更新文档</div>
-  <div class="current-version">当前版本：V1.6.4_Alis</div>
+  <div class="current-version">当前版本：V1.6.8_Alis</div>
 </div>
 
 <div class="container">
@@ -214,7 +214,7 @@
     <h2>版本概览</h2>
     <div class="summary-stats">
       <div class="stat-item">
-        <div class="num">18</div>
+        <div class="num">19</div>
         <div class="label">版本迭代</div>
       </div>
       <div class="stat-item">
@@ -232,10 +232,117 @@
     </div>
   </div>
 
+  <!-- V1.6.8 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.6.8_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-date">2026-08-03</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">聊天页判断假阴性（P1）：hasBottomInputBar 阈值 0.6 要求输入框在屏幕下方 40%，键盘弹起占屏 50% 时输入框被顶到 44%~50% 区间，不满足 0.6 阈值 → 判定不在聊天页 → 不拨号。修复：阈值降至 0.4（屏幕下方 60%），键盘弹起场景仍能通过，搜索框在顶部 10-15% 不受影响</li>
+        <li class="fix">OCR 分段标题匹配不一致（P2）：NodeFinder 已改为精确匹配，但 OcrHelper 仍用子串匹配（it in lt），"没有联系人匹配结果"会被误识别为"联系人"分段标题，干扰 OCR 分段上下文校验。修复：OcrHelper 新增 isOcrSectionHeader()，与 NodeFinder.isSectionHeader 保持一致口径</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">NodeFinder.kt</span> → <code>hasBottomInputBar()</code> 阈值 <code>screenHeight * 0.6f</code> → <code>screenHeight * 0.4f</code><br>
+          <span class="file">OcrHelper.kt</span> → 新增 <code>isOcrSectionHeader()</code>，分段标题检测由子串匹配改为精确匹配 + "标题+数字"格式<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=33, versionName="1.6.8_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.7 -->
+  <div class="version-card">
+    <div class="version-header left-border-blue">
+      <span class="version-tag">V1.6.7_Alis</span>
+      <span class="version-date">2026-08-03</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">落点校验永远失败（P0 致命）：微信新版聊天页几乎无文字，按钮全是图标 + content-desc。旧关键词"视频通话"/"语音通话"/"说点什么"等在聊天主页不可见（在+面板内或已过时），导致 hasChatSessionIndicator 永远返回 false → 落点校验反复失败 → 自动重搜 → 最终"没有拨通"。修复：改用 content-desc 特征（"更多功能按钮"/"切换到按住说话"/"更多信息"），这些在搜索结果页不会出现</li>
+        <li class="fix">失败后无法重试（P1）：fail() 中 pendingCall 延迟 3 秒才清除，期间 CallBridgeActivity 的 6 次重试全部被拒，报"无障碍服务启动中，请稍后再试"。修复：pendingCall 立即清除，仅 overlay 隐藏保留延迟</li>
+        <li class="fix">+ 按钮 resource-id 过时（P2）：微信新版 + 按钮 resource-id 变为 bjz，旧列表不包含。修复：PLUS_BUTTON_RESOURCE_IDS 新增 bjz</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">NodeFinder.kt</span> → <code>hasChatSessionIndicator()</code> 关键词由 text 改为 content-desc：<code>"更多功能按钮"</code>/<code>"切换到按住说话"</code>/<code>"更多信息"</code><br>
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>fail()</code> 中 <code>pendingCall = false</code> 移至立即执行，不再延迟 3s<br>
+          <span class="file">WeChatConstants.kt</span> → <code>PLUS_BUTTON_RESOURCE_IDS</code> 新增 <code>com.tencent.mm:id/bjz</code><br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=32, versionName="1.6.7_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.6 -->
+  <div class="version-card">
+    <div class="version-header left-border-green">
+      <span class="version-tag">V1.6.6_Alis</span>
+      <span class="version-date">2026-08-03</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">OCR 协程与 timeoutChecker 竞态（P0）：OCR 超过 15s 搜索超时后 timeoutChecker 触发 resetSearchForRetry + trySearchContact，新搜索开始后 OCR 协程完成，sm.isActive 仍为 true → OCR 点击旧搜索结果坐标 → 点错联系人。修复：引入 ocrInProgress 标志阻止 OCR 期间搜索重试，OCR 完成后增加 sm.state == SEARCHING_CONTACT 状态校验</li>
+        <li class="fix">分段标题子串匹配误命中（P1）："联系人"子串匹配会误命中"没有联系人匹配结果""联系人推荐"等非标题文本，导致 findContactsSectionBounds 返回错误 Y 区间。修复：改为精确匹配 + "标题 空格 数字"格式校验（兼容"联系人 3""公众号 2"）</li>
+        <li class="fix">聊天页判断过于宽泛（P2）：hasChatSessionIndicator 中的"发送"关键词在搜索页"发送给朋友"等场景也会出现，点击联系人未生效时误判为已进入聊天页。修复：移除"发送"，保留的文案均为聊天页独有特征</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → 新增 <code>ocrInProgress</code> 标志，OCR 启动前置 true、完成时 finally 置 false；timeoutChecker 搜索重试分支检查 <code>!ocrInProgress</code>；OCR 完成后校验 <code>sm.state == State.SEARCHING_CONTACT</code><br>
+          <span class="file">NodeFinder.kt</span> → <code>findAllSectionHeaders()</code> 子串匹配改为 <code>isSectionHeader()</code> 精确匹配 + "标题 空格 数字"格式<br>
+          <span class="file">NodeFinder.kt</span> → <code>hasChatSessionIndicator()</code> 移除 <code>"发送"</code> 关键词<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=31, versionName="1.6.6_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.5 -->
+  <div class="version-card">
+    <div class="version-header left-border-green">
+      <span class="version-tag">V1.6.5_Alis</span>
+      <span class="version-date">2026-08-03</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">pendingCall 死锁（P0）：无障碍服务在呼叫过程中崩溃且 onDestroy 未被调用时，pendingCall 永久为 true，服务重启后所有新呼叫被 startCall 拒绝。修复：onServiceConnected 中重置 pendingCall 和 targetContactName，onDestroy 中也补充重置</li>
+        <li class="fix">+ 按钮/视频通话步骤 root 为 null 不重试（P1）：tryClickPlusButton 和 tryClickVideoCall 在 rootInActiveWindow 返回 null 时直接 return，不像搜索阶段那样 postDelayedSafely 重试，导致白白等待超时检查器兜底。修复：统一加 800ms 重试调度</li>
+        <li class="fix">restartSearch() 重置不完整（P2）：落点校验失败返回搜索时未重置 plusButtonClicked / videoCallClicked / videoConfirmClicked / plusButtonRetries，当前流程暂无影响但存在隐性风险。修复：补全所有标志位和计数器重置</li>
+      </ul>
+      <div class="section-title">⚡ 优化</div>
+      <ul class="feature-list">
+        <li class="opt">无障碍服务健康监控（P0）：KeepAliveService 每 5 分钟检查 WeChatAccessibilityService.isConnected，断开时发送通知引导用户重新开启，服务恢复后自动取消通知。从被动（拨号时才发现）升级为主动监控</li>
+        <li class="opt">OCR 文本匹配线程优化（P1）：OcrHelper.findContactPosition 调用包裹 withContext(Dispatchers.Default)，allLines 遍历和分段匹配在后台线程执行，搜索结果多时不再阻塞主线程</li>
+        <li class="opt">onInterrupt 补充 targetContactName 重置，与 onDestroy 行为一致</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>onServiceConnected()</code> 新增 <code>pendingCall = false; targetContactName = ""</code>；<code>onDestroy()</code> 同步补充；<code>onInterrupt()</code> 补充 <code>targetContactName = ""</code><br>
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>tryClickPlusButton()</code> / <code>tryClickVideoCall()</code> root 为 null 时改为 <code>postDelayedSafely(800)</code> 重试<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → OCR 调用包裹 <code>withContext(Dispatchers.Default)</code>，新增 <code>import kotlinx.coroutines.withContext</code><br>
+          <span class="file">KeepAliveService.kt</span> → 新增 <code>healthHandler</code> / <code>healthChecker</code> / <code>checkAccessibilityHealth()</code> / <code>sendHealthNotification()</code>，<code>onCreate</code> 启动、<code>onDestroy</code> 停止<br>
+          <span class="file">CallStateMachine.kt</span> → <code>restartSearch()</code> 补全 <code>plusButtonRetries / plusButtonClicked / videoCallClicked / videoConfirmClicked</code> 重置<br>
+          <span class="file">strings.xml</span> → 新增 <code>notification_health_title</code> / <code>notification_health_text</code> 字符串<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=30, versionName="1.6.5_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- V1.6.4 -->
   <div class="version-card">
     <div class="version-header left-border">
-      <span class="version-tag">V1.6.4_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-tag">V1.6.4_Alis</span>
       <span class="version-date">2026-08-02</span>
     </div>
     <div class="version-body">

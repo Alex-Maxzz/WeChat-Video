@@ -147,7 +147,8 @@ object WeChatConstants {
     val PLUS_BUTTON_RESOURCE_IDS = listOf(
         "com.tencent.mm:id/ju",
         "com.tencent.mm:id/h9m",
-        "com.tencent.mm:id/b4m"
+        "com.tencent.mm:id/b4m",
+        "com.tencent.mm:id/bjz"
     )
 
     /**

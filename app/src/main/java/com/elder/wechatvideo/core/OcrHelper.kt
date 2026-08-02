@@ -135,16 +135,17 @@ object OcrHelper {
         val bitmapHeight = bitmap.height.toFloat()
 
         // 收集分段标题的 Y 坐标，用于判断匹配行属于哪个分段。
-        // 与 NodeFinder.findAllSectionHeaders 保持子串匹配口径一致。
+        // 与 NodeFinder.findAllSectionHeaders 保持精确匹配口径一致：
+        // 不使用子串匹配，避免"没有联系人匹配结果"等非标题文本被误识别为联系人分段标题。
         val contactHeaderYs = mutableListOf<Float>()
         val nonContactHeaderYs = mutableListOf<Float>()
         for (line in allLines) {
             val lt = line.text.replace(" ", "")
             val rect = line.boundingBox ?: continue
             val cy = rect.exactCenterY()
-            if (WeChatConstants.CONTACT_SECTION_HEADERS.any { it in lt }) {
+            if (WeChatConstants.CONTACT_SECTION_HEADERS.any { isOcrSectionHeader(lt, it) }) {
                 contactHeaderYs.add(cy)
-            } else if (WeChatConstants.NON_CONTACT_SECTION_HEADERS.any { it in lt }) {
+            } else if (WeChatConstants.NON_CONTACT_SECTION_HEADERS.any { isOcrSectionHeader(lt, it) }) {
                 nonContactHeaderYs.add(cy)
             }
         }
@@ -173,6 +174,21 @@ object OcrHelper {
 
         Log.d(TAG, "OCR 未找到「$targetName」")
         return null
+    }
+
+    /**
+     * 判断 OCR 识别文本（已去空格）是否为分段标题。
+     *
+     * 与 [NodeFinder.isSectionHeader] 保持一致口径：精确匹配或"标题+数字"格式，
+     * 不使用子串匹配，避免"没有联系人匹配结果"被误识别为"联系人"分段标题。
+     */
+    private fun isOcrSectionHeader(text: String, header: String): Boolean {
+        if (text == header) return true
+        if (text.startsWith(header)) {
+            val remainder = text.substring(header.length)
+            return remainder.matches(Regex("\\d+"))
+        }
+        return false
     }
 }
 

@@ -14,8 +14,8 @@ android {
         applicationId = "com.elder.wechatvideo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 31
-        versionName = "1.6.6_Alis"
+        versionCode = 33
+        versionName = "1.6.8_Alis"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -171,10 +171,24 @@ class NodeFinder {
     }
 
     fun hasChatSessionIndicator(root: AccessibilityNodeInfo): Boolean {
-        // P2 修复：移除"发送"——搜索页"发送给朋友""朋友圈"等场景也包含此词，
-        // 点击联系人未生效仍停留在搜索页时会误判为已进入聊天页。
-        // 保留的文案均为聊天页独有特征，搜索结果页不会出现。
-        return treeContainsAny(root, listOf("视频通话", "语音通话", "说点什么", "音视频通话", "设置备注和标签"))
+        // V1.6.7 修复：多层检测，防止微信改版导致 content-desc 文案变化后再次失效。
+        //
+        // 第1层（快）：content-desc 关键词匹配
+        //   聊天页底部按钮的 content-desc，搜索结果页不会出现。
+        //   风险：微信改版可能修改文案。
+        if (treeContainsAny(root, listOf(
+            "更多功能按钮",
+            "切换到按住说话",
+            "更多信息"
+        ))) return true
+
+        // 第2层（稳）：结构检测 — 底部输入栏
+        //   聊天页底部必有 EditText（输入框）且位于屏幕下方 40% 区域。
+        //   搜索页的 EditText 在顶部，公众号页无 EditText。
+        //   这是最稳定的特征：任何版本的聊天页都有底部输入框。
+        if (hasBottomInputBar(root)) return true
+
+        return false
     }
 
     /* ===================== 工具方法 ===================== */
@@ -289,6 +303,40 @@ class NodeFinder {
             }
             // 纯查询，不回收遍历节点（由调用方统一管理 root 生命周期，
             // 避免 OEM ROM 上 getChild 返回缓存引用导致 use-after-recycle）
+        }
+        return false
+    }
+
+    /**
+     * 结构检测：聊天页底部输入栏。
+     *
+     * 判定条件：屏幕下方 40% 区域存在 EditText（输入框）。
+     * - 聊天页：EditText 在底部（输入栏）
+     * - 搜索页：EditText 在顶部（搜索框）
+     * - 公众号页：无 EditText
+     *
+     * 这是跨版本最稳定的聊天页特征：任何微信版本的聊天页都有底部输入框。
+     */
+    private fun hasBottomInputBar(root: AccessibilityNodeInfo): Boolean {
+        val rect = Rect()
+        root.getBoundsInScreen(rect)
+        val screenHeight = rect.height()
+        val bottomThreshold = screenHeight * 0.4f // 屏幕下方 60%，兜底键盘弹起场景（0.6 会在键盘占屏50%时漏判）
+
+        val stack = ArrayDeque<AccessibilityNodeInfo>().apply { add(root) }
+        while (stack.isNotEmpty()) {
+            val n = stack.removeFirst()
+            val cls = n.className?.toString() ?: ""
+            if (cls == "android.widget.EditText") {
+                val r = Rect()
+                n.getBoundsInScreen(r)
+                if (r.top >= bottomThreshold) {
+                    return true
+                }
+            }
+            for (i in 0 until n.childCount) {
+                n.getChild(i)?.let { stack.add(it) }
+            }
         }
         return false
     }
