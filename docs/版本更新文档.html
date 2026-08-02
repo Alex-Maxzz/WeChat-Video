@@ -204,7 +204,7 @@
 <div class="header">
   <h1>一键视频</h1>
   <div class="subtitle">老人微信视频通话一键拨打工具 · 版本更新文档</div>
-  <div class="current-version">当前版本：V1.6.3_Alis</div>
+  <div class="current-version">当前版本：V1.6.4_Alis</div>
 </div>
 
 <div class="container">
@@ -214,7 +214,7 @@
     <h2>版本概览</h2>
     <div class="summary-stats">
       <div class="stat-item">
-        <div class="num">17</div>
+        <div class="num">18</div>
         <div class="label">版本迭代</div>
       </div>
       <div class="stat-item">
@@ -232,16 +232,43 @@
     </div>
   </div>
 
+  <!-- V1.6.4 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.6.4_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-date">2026-08-02</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">搜索结果误点公众号（根因修复）：分段标题检测由精确匹配改为子串匹配，"公众号 2"等带数量/空格的标题不再漏识别，公众号行被正确排除在联系人区间外</li>
+        <li class="fix">OCR 永远不执行：第1层节点查找"假成功"（找到公众号也算成功）导致 OCR 被跳过。修复后第1层正确返回 null，OCR 按设计正常降级介入</li>
+        <li class="fix">OCR 误点公众号：OCR 识别到目标文字后新增分段上下文校验，匹配行上方最近的标题必须是"联系人"/"朋友"才点击，否则跳过</li>
+        <li class="fix">OCR 期间无超时保护：进 OCR 前清空回调时误杀了超时检查器，现恢复 startTimeoutChecker，OCR 期间仍有超时兜底</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">NodeFinder.kt</span> → findAllSectionHeaders: <span class="keyword">t in allHeaders</span> → <span class="keyword">allHeaders.any { it in t }</span>（精确→子串匹配）<br>
+          <span class="file">OcrHelper.kt</span> → recognizeAndFind 新增分段标题 Y 坐标收集 + 上下文校验，非联系人分段下的匹配行跳过<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → tryClickSearchResult OCR 分支: removeCallbacksAndMessages 后恢复 startTimeoutChecker<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=29, versionName="1.6.4_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- V1.6.3 -->
   <div class="version-card">
     <div class="version-header left-border">
-      <span class="version-tag">V1.6.3_Alis <span class="badge current">当前版本</span></span>
-      <span class="version-date">2026-08-01</span>
+      <span class="version-tag">V1.6.3_Alis</span>
+      <span class="version-date">2026-08-02</span>
     </div>
     <div class="version-body">
       <div class="section-title">🔧 修复</div>
       <ul class="feature-list">
         <li class="fix">OCR 严格模式失效：搜索不存在的联系人时程序误判命中（搜索框文本被当作联系人结果），导致绕过严格模式直接盲点。修复匹配逻辑并新增 22 项单元测试覆盖核心场景</li>
+        <li class="fix">重启后拨号误报"未开启"：无障碍检查改为 500ms×6 次重试轮询，等待系统恢复服务绑定，不再一次性判断就报错</li>
       </ul>
       <div class="section-title">⚡ 优化</div>
       <ul class="feature-list">

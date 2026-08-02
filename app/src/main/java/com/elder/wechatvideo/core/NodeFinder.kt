@@ -157,6 +157,14 @@ class NodeFinder {
         return treeContainsAny(root, listOf("公众号")) && treeContainsAny(root, listOf("发消息"))
     }
 
+    /**
+     * 检测是否为非个人聊天页面（公众号文章/视频、小程序、视频号等）。
+     * 比 [isOfficialAccountPage] 更宽泛：只要命中任一非聊天特征即判定。
+     */
+    fun isNonChatPage(root: AccessibilityNodeInfo): Boolean {
+        return treeContainsAny(root, WeChatConstants.NON_CHAT_PAGE_KEYWORDS)
+    }
+
     fun isOnSearchResultsPage(root: AccessibilityNodeInfo): Boolean {
         val headers = WeChatConstants.CONTACT_SECTION_HEADERS + WeChatConstants.NON_CONTACT_SECTION_HEADERS
         return treeContainsAny(root, headers)
@@ -213,7 +221,10 @@ class NodeFinder {
         while (stack.isNotEmpty()) {
             val node = stack.removeFirst()
             val t = node.text?.toString() ?: ""
-            if (t in allHeaders) {
+            // 子串匹配（与 treeContainsAny 口径一致）：
+            // 微信分段标题可能带数量/尾空格（如"公众号 2"），精确匹配会漏识别，
+            // 导致区间下限缺失 → 公众号行落入"联系人"区间 → 误点。
+            if (allHeaders.any { it in t }) {
                 val rect = Rect()
                 node.getBoundsInScreen(rect)
                 found.add(t to rect.top.toFloat())

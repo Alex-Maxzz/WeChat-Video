@@ -79,7 +79,7 @@ class WeChatAccessibilityService : AccessibilityService() {
                 Log.w(TAG, "无障碍服务未连接，无法发起呼叫: $contactName")
                 return false
             }
-            if (svc.sm.isActive) {
+            if (svc.sm.isActive || pendingCall) {
                 Log.w(TAG, "已有呼叫在运行，拒绝新请求: $contactName")
                 return false
             }
@@ -297,7 +297,8 @@ class WeChatAccessibilityService : AccessibilityService() {
             return
         }
         // 第2层：OCR 精准识别（按名字找人，不会点错）
-        handler.removeCallbacksAndMessages(null) // 清空所有待执行回调，防止重试/超时抢先
+        handler.removeCallbacksAndMessages(null) // 清空搜索重试回调，防止抢先触发
+        startTimeoutChecker() // 恢复超时保护（OCR 期间仍需超时兜底）
         scope.launch {
             val ocrEnabled = com.elder.wechatvideo.util.SettingsPrefs.isOcrEnabled(applicationContext)
             val strictMode = com.elder.wechatvideo.util.SettingsPrefs.isOcrStrictMode(applicationContext)
@@ -354,9 +355,15 @@ class WeChatAccessibilityService : AccessibilityService() {
         when {
             nodeFinder.isOfficialAccountPage(root) ->
                 fail("误入公众号，已中止（未误拨）")
-            !nodeFinder.isOnSearchResultsPage(root) || nodeFinder.hasChatSessionIndicator(root) -> {
+            nodeFinder.isNonChatPage(root) ->
+                fail("进入了非聊天页面，已中止")
+            nodeFinder.hasChatSessionIndicator(root) -> {
                 sm.transitionTo(State.CLICKING_CONTACT)
                 postDelayedSafely(STEP_DELAY) { if (sm.state == State.CLICKING_CONTACT) tryClickPlusButton() }
+            }
+            !nodeFinder.isOnSearchResultsPage(root) -> {
+                // 离开了搜索结果页但没有聊天页特征，继续等一帧（可能页面还在加载）
+                scheduleLandingPoll()
             }
             else -> scheduleLandingPoll()
         }

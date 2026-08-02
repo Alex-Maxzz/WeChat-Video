@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
 import android.view.Display
+import com.elder.wechatvideo.util.WeChatConstants
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -128,20 +129,46 @@ object OcrHelper {
             return null
         }
 
-        val allLines = text.textBlocks.flatMap { it.lines }.map { it.text }
-        debugCallback?.invoke("OCR: 识别到${allLines.size}行: ${allLines.take(5).joinToString("|")}")
+        val allLines = text.textBlocks.flatMap { it.lines }
+        debugCallback?.invoke("OCR: 识别到${allLines.size}行: ${allLines.map { it.text }.take(5).joinToString("|")}")
 
         val bitmapHeight = bitmap.height.toFloat()
-        for (block in text.textBlocks) {
-            for (line in block.lines) {
-                val lineText = line.text.replace(" ", "")
-                val rect = line.boundingBox ?: continue
-                if (!isContactMatch(lineText, targetName, rect.exactCenterY(), bitmapHeight)) continue
-                val x = rect.exactCenterX()
-                val y = rect.exactCenterY()
-                Log.i(TAG, "OCR 命中「$targetName」→ ($x, $y)")
-                return Pair(x, y)
+
+        // 收集分段标题的 Y 坐标，用于判断匹配行属于哪个分段。
+        // 与 NodeFinder.findAllSectionHeaders 保持子串匹配口径一致。
+        val contactHeaderYs = mutableListOf<Float>()
+        val nonContactHeaderYs = mutableListOf<Float>()
+        for (line in allLines) {
+            val lt = line.text.replace(" ", "")
+            val rect = line.boundingBox ?: continue
+            val cy = rect.exactCenterY()
+            if (WeChatConstants.CONTACT_SECTION_HEADERS.any { it in lt }) {
+                contactHeaderYs.add(cy)
+            } else if (WeChatConstants.NON_CONTACT_SECTION_HEADERS.any { it in lt }) {
+                nonContactHeaderYs.add(cy)
             }
+        }
+
+        for (line in allLines) {
+            val lineText = line.text.replace(" ", "")
+            val rect = line.boundingBox ?: continue
+            if (!isContactMatch(lineText, targetName, rect.exactCenterY(), bitmapHeight)) continue
+
+            // 分段上下文校验：匹配行上方最近的标题必须是"联系人"/"朋友"，
+            // 如果上方最近的是"群聊"/"公众号"等非联系人分段，则跳过（防止误点公众号）。
+            // 若未识别到任何分段标题（字体小/遮挡），不拦截，保持原有行为。
+            val cy = rect.exactCenterY()
+            val nearestContact = contactHeaderYs.filter { it <= cy }.maxOrNull()
+            val nearestNonContact = nonContactHeaderYs.filter { it <= cy }.maxOrNull()
+            if (nearestNonContact != null && (nearestContact == null || nearestNonContact > nearestContact)) {
+                debugCallback?.invoke("OCR: 命中「$targetName」但位于非联系人分段，跳过")
+                continue
+            }
+
+            val x = rect.exactCenterX()
+            val y = rect.exactCenterY()
+            Log.i(TAG, "OCR 命中「$targetName」→ ($x, $y)")
+            return Pair(x, y)
         }
 
         Log.d(TAG, "OCR 未找到「$targetName」")
