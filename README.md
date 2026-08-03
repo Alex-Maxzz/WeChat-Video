@@ -3,7 +3,7 @@
 > 面向老年人的**微信视频通话辅助** Android 应用。通过系统无障碍服务（AccessibilityService）识别并驱动微信界面，配合悬浮校准层，让老人"一键"发起微信视频通话；联系人本地存储，通话流程由状态机驱动。
 
 - **包名**：`com.elder.wechatvideo`
-- **版本**：`1.6.3_Alis`（versionCode 28）
+- **版本**：`1.6.9_Alis`（versionCode 34）
 - **最低/目标 SDK**：`minSdk 26` / `compileSdk & targetSdk 35`
 - **技术栈**：Kotlin 2.0.20 · Jetpack Compose · Hilt · Room · Navigation Compose · ML Kit 中文 OCR
 
@@ -170,6 +170,76 @@ app/src/main/
 - `util/PositionConfigTest.kt`
 
 运行：`./gradlew :app:testDebugUnitTest`
+
+---
+
+## 版本更新记录
+
+> 完整版可交互文档见 [`docs/版本更新文档.html`](docs/版本更新文档.html)
+
+### V1.6.9_Alis（2026-08-03）`当前版本`
+
+- 🔧 **重启后快捷方式误报"无障碍未开启"（P0）**：设备重启后 `Settings.Secure` 可能暂时为空，但无障碍服务已通过 `onServiceConnected` 绑定。第1道检测增加 `isConnected` 运行时标志作为替代判据，任一为 true 即通过
+
+### V1.6.8_Alis（2026-08-03）
+
+- 🔧 **聊天页判断假阴性（P1）**：`hasBottomInputBar` 阈值 0.6→0.4，兜底键盘弹起场景（输入框被顶到 44% 不再漏判）
+- 🔧 **OCR 分段标题匹配不一致（P2）**：`OcrHelper` 仍用子串匹配会误识别"没有联系人匹配结果"，改为与 `NodeFinder` 一致的精确匹配
+
+### V1.6.7_Alis（2026-08-03）
+
+- 🔧 **落点校验永远失败（P0）**：微信新版聊天页按钮全是图标，旧文字关键词失效。改用 `content-desc` 特征 + 底部 `EditText` 结构检测
+- 🔧 **失败后无法重试（P1）**：`fail()` 中 `pendingCall` 立即清除，不再延迟 3 秒
+- 🔧 **+ 按钮 resource-id 过时（P2）**：`PLUS_BUTTON_RESOURCE_IDS` 新增 `bjz`
+
+### V1.6.6_Alis（2026-08-03）
+
+- 🔧 **OCR 协程与 timeoutChecker 竞态（P0）**：引入 `ocrInProgress` 标志阻止 OCR 期间搜索重试，OCR 完成后校验状态未变才执行点击
+- 🔧 **分段标题子串匹配误命中（P1）**：改为精确匹配 + "标题 空格 数字"格式
+- 🔧 **聊天页判断过于宽泛（P2）**：移除"发送"关键词，避免搜索页误判
+
+### V1.6.5_Alis（2026-08-03）
+
+- 🔧 **pendingCall 死锁（P0）**：`onServiceConnected` 中重置 `pendingCall`，服务崩溃重启后不再永久拒绝新呼叫
+- 🔧 **+ 按钮/视频通话 root 为 null 不重试（P1）**：统一加 800ms 重试调度
+- 🔧 **restartSearch() 重置不完整（P2）**：补全所有标志位和计数器重置
+- ⚡ 无障碍服务健康监控：每 5 分钟检查连接状态，断开时主动通知
+- ⚡ OCR 文本匹配切到 `Dispatchers.Default`，不再卡主线程
+
+### V1.6.4_Alis（2026-08-02）
+
+- 🔧 **搜索结果误点公众号**：分段标题检测改为子串匹配，"公众号 2"等不再漏识别
+- 🔧 **OCR 永远不执行**：第1层节点查找假成功导致 OCR 被跳过，修复后正确降级
+- 🔧 **OCR 误点公众号**：新增分段上下文校验，非联系人分段下的匹配行跳过
+- 🔧 **OCR 期间无超时保护**：恢复 `startTimeoutChecker`
+
+### V1.6.3_Alis（2026-08-02）
+
+- 🔧 **OCR 严格模式失效**：搜索框文本被误判为联系人结果，修复匹配逻辑并新增 22 项单元测试
+- 🔧 **重启后拨号误报"未开启"**：无障碍检查改为 500ms×6 次重试
+- ⚡ OCR 匹配口径与无障碍节点查找对齐（精确/前缀），排除搜索框区域
+
+### V1.6.2_Alis（2026-08-01）
+
+- 🔧 **OCR 截图失败**：补全 `canTakeScreenshot` 权限声明
+- 🔧 移除全部调试弹窗，取消按钮改为固定位置
+
+### V1.6.1_Alis（2026-08-01）
+
+- 🔧 保活服务冷启动缺口：打开 App 即启动前台服务
+- 🔧 Direct Boot 崩溃：移除 `LOCKED_BOOT_COMPLETED`
+- 🔧 节点泄漏：`clickNode` 统一回收
+- 🔧 校准服务结束时先 `stopForeground` 再 `stopSelf`
+
+### V1.6.0_Alis（2026-08-01）
+
+- ✨ 新增设置页面：OCR 开关、严格模式、自动拨号、浮窗固定、主题切换
+- ✨ 三层拨号防线：节点 → OCR → 坐标
+
+### V1.5.0_Alis（2026-08-01）
+
+- ✨ 新增 OCR 智能识别（ML Kit 端侧），三层兜底架构
+- ✨ 拨号浮窗双窗口架构：显示层触摸穿透
 
 ---
 
