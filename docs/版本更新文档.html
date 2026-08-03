@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -204,7 +204,7 @@
 <div class="header">
   <h1>一键视频</h1>
   <div class="subtitle">老人微信视频通话一键拨打工具 · 版本更新文档</div>
-  <div class="current-version">当前版本：V1.6.8_Alis</div>
+  <div class="current-version">当前版本：V1.6.9_Alis</div>
 </div>
 
 <div class="container">
@@ -214,7 +214,7 @@
     <h2>版本概览</h2>
     <div class="summary-stats">
       <div class="stat-item">
-        <div class="num">19</div>
+        <div class="num">20</div>
         <div class="label">版本迭代</div>
       </div>
       <div class="stat-item">
@@ -232,10 +232,31 @@
     </div>
   </div>
 
-  <!-- V1.6.8 -->
+  <!-- V1.6.9 -->
   <div class="version-card">
     <div class="version-header left-border">
-      <span class="version-tag">V1.6.8_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-tag">V1.6.9_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-date">2026-08-03</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">重启后快捷方式误报"无障碍未开启"（P0 致命）：设备重启后 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES 可能暂时为空（系统异步恢复），但无障碍服务实际已通过 onServiceConnected 绑定成功（isConnected=true）。旧逻辑只读 Settings.Secure → 6次重试全 false → 误判未开启 → 跳转设置页，而李跳跳等纯无障碍服务不受影响（它们本身就是服务实例，不依赖 Settings.Secure）。修复：第1道检测增加 isConnected 运行时标志作为替代判据，运行时标志 OR 系统设置值任一为 true 即通过</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">CallBridgeActivity.kt</span> → 无障碍检查条件由 <code>isAccessibilityServiceEnabled()</code> 改为 <code>isConnected || isAccessibilityServiceEnabled()</code><br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=34, versionName="1.6.9_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.8 -->
+  <div class="version-card">
+    <div class="version-header left-border-blue">
+      <span class="version-tag">V1.6.8_Alis</span>
       <span class="version-date">2026-08-03</span>
     </div>
     <div class="version-body">

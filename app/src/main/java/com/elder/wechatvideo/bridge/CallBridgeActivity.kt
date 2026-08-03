@@ -86,9 +86,14 @@ class CallBridgeActivity : ComponentActivity() {
         // 3. 先启动微信主界面，确认成功后再武装无障碍服务
         lifecycleScope.launch {
             // ---- 无障碍服务检查（带重试，解决重启后延迟恢复） ----
+            // P0 修复：重启后 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES 可能暂时为空，
+            // 但无障碍服务实际已绑定（onServiceConnected → isConnected=true）。
+            // 增加 isConnected 作为替代判据：运行时标志 OR 系统设置值，任一为 true 即通过。
+            // 这与李跳跳的行为一致 —— 服务已在运行，不需要依赖 Settings.Secure 恢复。
             var a11yEnabled = false
             repeat(6) { attempt ->
-                if (PermissionUtils.isAccessibilityServiceEnabled(
+                if (WeChatAccessibilityService.isConnected ||
+                    PermissionUtils.isAccessibilityServiceEnabled(
                         this@CallBridgeActivity, WeChatAccessibilityService::class.java
                     )) {
                     a11yEnabled = true

@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.6.9",
+            date = "2026-08-03",
+            changes = "· 修复重启后快捷方式误报\"无障碍未开启\"（P0）：Settings.Secure 重启后可能暂时为空，但服务已实际绑定。增加 isConnected 运行时标志作为替代判据，任一为 true 即通过"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.6.8",
             date = "2026-08-03",
             changes = "· 修复聊天页判断假阴性：底部输入框检测阈值从 0.6 降至 0.4（屏幕下方60%），兜底键盘弹起场景（键盘占屏50%时输入框被顶到44%不再漏判）\n· 修复 OCR 分段标题匹配不一致：OcrHelper 仍用子串匹配会误识别\"没有联系人匹配结果\"为联系人标题，改为与 NodeFinder 一致的精确匹配"
