@@ -10,7 +10,7 @@
 [![Hilt](https://img.shields.io/badge/Hilt-DI-2.52)](https://dagger.dev/hilt)
 [![MinSDK](https://img.shields.io/badge/minSDK-26%20(8.0)-blue)]()
 [![Version](https://img.shields.io/badge/version-1.6.9__Alis-green)]()
-[![License](https://img.shields.io/badge/license-MIT-informational)]()
+
 
 [功能特性](#-功能特性) · [技术架构](#️-技术架构) · [快速开始](#-快速开始) · [版本记录](#-版本记录) · [隐私说明](#-隐私说明)
 
@@ -194,16 +194,5 @@ gradle wrapper
 
 ---
 
-## 📄 许可证
-
-本项目采用 [MIT](LICENSE) 许可证。
-
----
-
-<div align="center">
-
-**如果这个项目对你有帮助，请给一个 ⭐ Star**
-
-Made with ❤️ by [Alex-Maxzz](https://github.com/Alex-Maxzz)
 
 </div>
