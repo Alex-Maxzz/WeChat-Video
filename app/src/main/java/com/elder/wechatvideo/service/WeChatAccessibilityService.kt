@@ -515,11 +515,7 @@ class WeChatAccessibilityService : AccessibilityService() {
             val root = rootInActiveWindow
             if (root != null) {
                 try {
-                    val hasMenu = nodeFinder.findVideoCallButton(root) != null ||
-                        WeChatConstants.VIDEO_CALL_TEXTS.any { text ->
-                            root.findAccessibilityNodeInfosByText(text).isNotEmpty()
-                        } ||
-                        root.findAccessibilityNodeInfosByText("语音通话").isNotEmpty()
+                    val hasMenu = root.findAccessibilityNodeInfosByText("语音通话").isNotEmpty()
                     if (hasMenu) {
                         showProgress("✓ 已打开通话菜单，请选择视频或语音")
                         showToast("请选择视频通话或语音通话")

@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.7.4",
+            date = "2026-08-06",
+            changes = "· 修复视频通话菜单验证假阳性（P0）：tryClickVideoConfirm 验证菜单是否弹出时，findVideoCallButton 和 VIDEO_CALL_TEXTS 会在 +面板还开着时匹配到\"视频通话\"文本导致假成功。修复：只检查\"语音通话\"文本（仅出现在选择菜单，+面板没有），未弹出则 fail 报错，杜绝静默假成功"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.7.3",
             date = "2026-08-06",
             changes = "· 修复 clickNode performAction 返回 false 时不兜底坐标点击（P0）：微信 + 面板视频通话节点不可点击时 performAction 失败，之前只打 warning 就跳过，导致流程空转。修复：performAction 失败时用节点屏幕坐标 gestureClickAt 兜底点击"
