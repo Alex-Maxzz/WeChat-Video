@@ -9,7 +9,7 @@
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Hilt-DI-2.52)](https://dagger.dev/hilt)
 [![MinSDK](https://img.shields.io/badge/minSDK-26%20(8.0)-blue)]()
-[![Version](https://img.shields.io/badge/version-1.7.1__Alis-green)]()
+[![Version](https://img.shields.io/badge/version-1.7.2__Alis-green)]()
 
 
 [功能特性](#-功能特性) · [技术架构](#️-技术架构) · [快速开始](#-快速开始) · [版本记录](#-版本记录) · [隐私说明](#-隐私说明)
@@ -178,7 +178,13 @@ gradle wrapper
 
 ## 📝 版本更新记录
 
-### V1.7.1_Alis（2026-08-06）`当前版本`
+### V1.7.2_Alis（2026-08-06）`当前版本`
+
+- 🔧 **校准页面重启后误报无障碍未开启**：`CalibrationScreen` 改用 `isConnected || isAccessibilityServiceEnabled` 双重判断
+- 🔧 **视频通话坐标点击偏移到转账（P0）**：`tryClickVideoCall` 改为节点优先查找，节点找不到才用坐标兜底
+- 🔧 **auto_dial=false 时不验证视频菜单是否弹出就误判成功**：`tryClickVideoConfirm` 增加落地验证，菜单未弹出则报错提示重新校准
+
+### V1.7.1_Alis（2026-08-06）
 
 - 🔧 **gradle.properties 机器特定路径迁移修复**：`org.gradle.java.home` 和 `aapt2FromMavenOverride` 移至用户级 `~/.gradle/gradle.properties`，命令行构建不再找不到 JDK
 - 🔧 **fail() 后 3 秒内重新拨号浮层被提前隐藏**：`beginCallFlow()` 开头清除旧 `overlay.hide()` 回调

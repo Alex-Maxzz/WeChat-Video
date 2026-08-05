@@ -476,6 +476,24 @@ class WeChatAccessibilityService : AccessibilityService() {
     private fun tryClickVideoCall() {
         if (sm.videoCallClicked) return
 
+        val root = rootInActiveWindow ?: run {
+            postDelayedSafely(800) { if (sm.state == State.CLICKING_PLUS) tryClickVideoCall() }
+            return
+        }
+        try {
+            val videoNode = nodeFinder.findVideoCallButton(root)
+            if (videoNode != null) {
+                sm.markVideoCallClicked()
+                showProgress("⑤ 正在点击视频通话图标…")
+                clickNode(videoNode)
+                sm.transitionTo(State.CLICKING_VIDEO)
+                postDelayedSafely(STEP_DELAY) { if (sm.state == State.CLICKING_VIDEO) tryClickVideoConfirm() }
+                return
+            }
+        } finally {
+            root.recycle()
+        }
+
         val pos = PositionConfig.getVideoCallButton(applicationContext)
         if (pos != null) {
             sm.markVideoCallClicked()
@@ -486,36 +504,34 @@ class WeChatAccessibilityService : AccessibilityService() {
             return
         }
 
-        val root = rootInActiveWindow ?: run {
-            postDelayedSafely(800) { if (sm.state == State.CLICKING_PLUS) tryClickVideoCall() }
-            return
-        }
-        try {
-        val videoNode = nodeFinder.findVideoCallButton(root)
-        if (videoNode != null) {
-            sm.markVideoCallClicked()
-            showProgress("⑤ 正在点击视频通话图标…")
-            clickNode(videoNode)
-            sm.transitionTo(State.CLICKING_VIDEO)
-            postDelayedSafely(STEP_DELAY) { if (sm.state == State.CLICKING_VIDEO) tryClickVideoConfirm() }
-            return
-        }
-
         postDelayedSafely(1000) { if (sm.state == State.CLICKING_PLUS) tryClickVideoCall() }
-        } finally {
-            root.recycle()
-        }
     }
 
     private fun tryClickVideoConfirm() {
         if (sm.videoConfirmClicked) return
 
-        // 自动拨打关闭：停在视频/语音选择菜单
+        // 自动拨打关闭：验证视频/语音菜单已弹出后停在菜单
         if (!PositionConfig.isAutoDialEnabled(applicationContext)) {
-            showProgress("✓ 已打开通话菜单，请选择视频或语音")
-            showToast("请选择视频通话或语音通话")
-            sm.transitionTo(State.DONE)
-            handler.postDelayed({ overlay.hide(); sm.resetToIdle(); pendingCall = false }, 3000)
+            val root = rootInActiveWindow
+            if (root != null) {
+                try {
+                    val hasMenu = nodeFinder.findVideoCallButton(root) != null ||
+                        WeChatConstants.VIDEO_CALL_TEXTS.any { text ->
+                            root.findAccessibilityNodeInfosByText(text).isNotEmpty()
+                        } ||
+                        root.findAccessibilityNodeInfosByText("语音通话").isNotEmpty()
+                    if (hasMenu) {
+                        showProgress("✓ 已打开通话菜单，请选择视频或语音")
+                        showToast("请选择视频通话或语音通话")
+                        sm.transitionTo(State.DONE)
+                        handler.postDelayed({ overlay.hide(); sm.resetToIdle(); pendingCall = false }, 3000)
+                        return
+                    }
+                } finally {
+                    root.recycle()
+                }
+            }
+            fail("未打开视频通话菜单，请重新校准视频通话按钮坐标")
             return
         }
 

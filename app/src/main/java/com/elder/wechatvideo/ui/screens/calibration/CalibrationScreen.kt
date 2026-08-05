@@ -79,7 +79,10 @@ fun CalibrationScreen(
     var isCalibrated by remember { mutableStateOf(PositionConfig.isCalibrated(context)) }
     var hasOverlayPermission by remember { mutableStateOf(PermissionUtils.canDrawOverlays(context)) }
     var hasAccessibility by remember {
-        mutableStateOf(PermissionUtils.isAccessibilityServiceEnabled(context, WeChatAccessibilityService::class.java))
+        mutableStateOf(
+            WeChatAccessibilityService.isConnected ||
+            PermissionUtils.isAccessibilityServiceEnabled(context, WeChatAccessibilityService::class.java)
+        )
     }
     var isWeChatInstalled by remember { mutableStateOf(isWeChatInstalled(context)) }
 
@@ -89,9 +92,10 @@ fun CalibrationScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 isCalibrated = PositionConfig.isCalibrated(context)
                 hasOverlayPermission = PermissionUtils.canDrawOverlays(context)
-                hasAccessibility = PermissionUtils.isAccessibilityServiceEnabled(
-                    context, WeChatAccessibilityService::class.java
-                )
+                hasAccessibility = WeChatAccessibilityService.isConnected ||
+                    PermissionUtils.isAccessibilityServiceEnabled(
+                        context, WeChatAccessibilityService::class.java
+                    )
                 isWeChatInstalled = isWeChatInstalled(context)
             }
         }

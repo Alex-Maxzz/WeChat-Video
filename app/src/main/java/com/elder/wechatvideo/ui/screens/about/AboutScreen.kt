@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.7.2",
+            date = "2026-08-06",
+            changes = "· 修复校准页面重启后误报无障碍未开启：CalibrationScreen 改用 isConnected || isAccessibilityServiceEnabled 双重判断\n· 修复视频通话坐标点击偏移到转账：tryClickVideoCall 改为节点优先查找，节点找不到才用坐标兜底\n· 修复 auto_dial=false 时不验证视频菜单是否弹出就误判成功：tryClickVideoConfirm 增加落地验证，菜单未弹出则报错提示重新校准"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.7.1",
             date = "2026-08-06",
             changes = "· 修复 gradle.properties 机器特定路径迁移：org.gradle.java.home 和 aapt2FromMavenOverride 移至用户级 ~/.gradle/gradle.properties，命令行构建不再找不到 JDK\n· 修复 fail() 后 3 秒内重新拨号浮层被提前隐藏：beginCallFlow() 开头清除旧 overlay.hide() 回调\n· 修正 SettingsPrefs.kt 类注释：移除已删除的\"浮窗位置锁定\"描述"
