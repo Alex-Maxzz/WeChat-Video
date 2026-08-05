@@ -5,7 +5,7 @@ import android.content.Context
 /**
  * 设置页偏好管理。
  *
- * 管理 OCR 开关、严格模式、浮窗位置锁定、主题模式等用户偏好。
+ * 管理 OCR 开关、严格模式、主题模式等用户偏好。
  */
 object SettingsPrefs {
 

@@ -188,6 +188,7 @@ class WeChatAccessibilityService : AccessibilityService() {
     private fun beginCallFlow() {
         handler.post {
             if (pendingCall && sm.state == State.IDLE) {
+                handler.removeCallbacksAndMessages(null)
                 sm.resetCounters()
                 landingRetryUsed = false
                 sm.start()
