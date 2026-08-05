@@ -9,7 +9,7 @@
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Hilt-DI-2.52)](https://dagger.dev/hilt)
 [![MinSDK](https://img.shields.io/badge/minSDK-26%20(8.0)-blue)]()
-[![Version](https://img.shields.io/badge/version-1.7.0__Alis-green)]()
+[![Version](https://img.shields.io/badge/version-1.7.1__Alis-green)]()
 
 
 [功能特性](#-功能特性) · [技术架构](#️-技术架构) · [快速开始](#-快速开始) · [版本记录](#-版本记录) · [隐私说明](#-隐私说明)
@@ -178,7 +178,13 @@ gradle wrapper
 
 ## 📝 版本更新记录
 
-### V1.7.0_Alis（2026-08-06）`当前版本`
+### V1.7.1_Alis（2026-08-06）`当前版本`
+
+- 🔧 **gradle.properties 机器特定路径迁移修复**：`org.gradle.java.home` 和 `aapt2FromMavenOverride` 移至用户级 `~/.gradle/gradle.properties`，命令行构建不再找不到 JDK
+- 🔧 **fail() 后 3 秒内重新拨号浮层被提前隐藏**：`beginCallFlow()` 开头清除旧 `overlay.hide()` 回调
+- 🔧 修正 `SettingsPrefs.kt` 类注释：移除已删除的"浮窗位置锁定"描述
+
+### V1.7.0_Alis（2026-08-06）
 
 - 🔧 **fail() 竞态导致取消/失败后仍可能误点击（P0）**：`sm.resetToIdle()` 延迟 3 秒，期间 OCR/盲戳检查 `sm.isActive` 仍为 true 会误点击。改为立即切 IDLE
 - 🔧 **resetSearchForRetry 漏重置 searchClickRetries**：搜索结果超时重试时计数不清零，累计触发"搜索按钮无法打开"误报

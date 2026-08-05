@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.7.1",
+            date = "2026-08-06",
+            changes = "· 修复 gradle.properties 机器特定路径迁移：org.gradle.java.home 和 aapt2FromMavenOverride 移至用户级 ~/.gradle/gradle.properties，命令行构建不再找不到 JDK\n· 修复 fail() 后 3 秒内重新拨号浮层被提前隐藏：beginCallFlow() 开头清除旧 overlay.hide() 回调\n· 修正 SettingsPrefs.kt 类注释：移除已删除的\"浮窗位置锁定\"描述"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.7.0",
             date = "2026-08-06",
             changes = "· 修复 fail() 竞态（P0）：失败后 sm.resetToIdle() 延迟 3 秒执行，期间 OCR/盲戳检查 sm.isActive 仍为 true 会误点击。改为立即切 IDLE\n· 修复 resetSearchForRetry 漏重置 searchClickRetries：搜索结果超时重试时计数不清零，累计触发\"搜索按钮无法打开\"误报\n· 清理死代码：删除未调用的 AutoDialCard、失效的浮窗位置固定开关、8 个零引用僵尸常量"
