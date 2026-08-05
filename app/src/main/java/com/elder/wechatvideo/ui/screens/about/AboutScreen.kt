@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.7.3",
+            date = "2026-08-06",
+            changes = "· 修复 clickNode performAction 返回 false 时不兜底坐标点击（P0）：微信 + 面板视频通话节点不可点击时 performAction 失败，之前只打 warning 就跳过，导致流程空转。修复：performAction 失败时用节点屏幕坐标 gestureClickAt 兜底点击"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.7.2",
             date = "2026-08-06",
             changes = "· 修复校准页面重启后误报无障碍未开启：CalibrationScreen 改用 isConnected || isAccessibilityServiceEnabled 双重判断\n· 修复视频通话坐标点击偏移到转账：tryClickVideoCall 改为节点优先查找，节点找不到才用坐标兜底\n· 修复 auto_dial=false 时不验证视频菜单是否弹出就误判成功：tryClickVideoConfirm 增加落地验证，菜单未弹出则报错提示重新校准"

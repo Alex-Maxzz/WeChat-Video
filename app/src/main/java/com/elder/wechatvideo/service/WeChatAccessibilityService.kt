@@ -607,7 +607,12 @@ class WeChatAccessibilityService : AccessibilityService() {
             }
             if (target != null) {
                 val ok = target.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                if (!ok) Log.w(TAG, "clickNode: performAction(ACTION_CLICK) 返回 false")
+                if (!ok) {
+                    Log.w(TAG, "clickNode: performAction(ACTION_CLICK) 返回 false，改用坐标点击")
+                    val rect = Rect()
+                    target.getBoundsInScreen(rect)
+                    gestureClickAt(rect.exactCenterX(), rect.exactCenterY())
+                }
                 if (target !== node) target.recycle()
             } else {
                 val rect = Rect()

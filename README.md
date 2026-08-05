@@ -9,7 +9,7 @@
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Hilt-DI-2.52)](https://dagger.dev/hilt)
 [![MinSDK](https://img.shields.io/badge/minSDK-26%20(8.0)-blue)]()
-[![Version](https://img.shields.io/badge/version-1.7.2__Alis-green)]()
+[![Version](https://img.shields.io/badge/version-1.7.3__Alis-green)]()
 
 
 [功能特性](#-功能特性) · [技术架构](#️-技术架构) · [快速开始](#-快速开始) · [版本记录](#-版本记录) · [隐私说明](#-隐私说明)
@@ -178,7 +178,11 @@ gradle wrapper
 
 ## 📝 版本更新记录
 
-### V1.7.2_Alis（2026-08-06）`当前版本`
+### V1.7.3_Alis（2026-08-06）`当前版本`
+
+- 🔧 **clickNode performAction 返回 false 时不兜底坐标点击（P0）**：微信 + 面板视频通话节点不可点击时 `performAction` 失败，之前只打 warning 就跳过，导致流程空转。修复：`performAction` 失败时用节点屏幕坐标 `gestureClickAt` 兜底点击
+
+### V1.7.2_Alis（2026-08-06）
 
 - 🔧 **校准页面重启后误报无障碍未开启**：`CalibrationScreen` 改用 `isConnected || isAccessibilityServiceEnabled` 双重判断
 - 🔧 **视频通话坐标点击偏移到转账（P0）**：`tryClickVideoCall` 改为节点优先查找，节点找不到才用坐标兜底
