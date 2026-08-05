@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.7.0",
+            date = "2026-08-06",
+            changes = "· 修复 fail() 竞态（P0）：失败后 sm.resetToIdle() 延迟 3 秒执行，期间 OCR/盲戳检查 sm.isActive 仍为 true 会误点击。改为立即切 IDLE\n· 修复 resetSearchForRetry 漏重置 searchClickRetries：搜索结果超时重试时计数不清零，累计触发\"搜索按钮无法打开\"误报\n· 清理死代码：删除未调用的 AutoDialCard、失效的浮窗位置固定开关、8 个零引用僵尸常量"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.6.9",
             date = "2026-08-03",
             changes = "· 修复重启后快捷方式误报\"无障碍未开启\"（P0）：Settings.Secure 重启后可能暂时为空，但服务已实际绑定。增加 isConnected 运行时标志作为替代判据，任一为 true 即通过"

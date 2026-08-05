@@ -218,54 +218,6 @@ fun CalibrationScreen(
 
 /* ===================== 组件 ===================== */
 
-/**
- * 自动拨打开关卡片
- *
- * 开启时：全自动搜索联系人→进聊天→点+→点视频通话→点确认→拨出
- * 关闭时：只搜索联系人并进入聊天界面，不自动拨打
- */
-@Composable
-private fun AutoDialCard(
-    enabled: Boolean,
-    onToggle: (Boolean) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                             else MaterialTheme.colorScheme.surfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "自动拨打视频通话",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = if (enabled) "开启：全自动搜索并拨打视频通话"
-                           else "关闭：只搜索联系人并进入聊天，手动拨打",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = enabled,
-                onCheckedChange = onToggle
-            )
-        }
-    }
-}
-
 @Composable
 private fun StatusCard(isCalibrated: Boolean) {
     val color = if (isCalibrated) MaterialTheme.colorScheme.secondary

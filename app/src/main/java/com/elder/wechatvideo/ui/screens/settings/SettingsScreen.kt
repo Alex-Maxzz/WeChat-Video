@@ -48,7 +48,6 @@ fun SettingsScreen(
     var autoDial by remember { mutableStateOf(PositionConfig.isAutoDialEnabled(context)) }
     var ocrEnabled by remember { mutableStateOf(SettingsPrefs.isOcrEnabled(context)) }
     var ocrStrict by remember { mutableStateOf(SettingsPrefs.isOcrStrictMode(context)) }
-    var overlayLocked by remember { mutableStateOf(SettingsPrefs.isOverlayLocked(context)) }
     var themeMode by remember { mutableStateOf(SettingsPrefs.getThemeMode(context)) }
 
     Column(
@@ -101,24 +100,6 @@ fun SettingsScreen(
                     }
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ===== 浮窗设置 =====
-        SectionTitle("浮窗设置")
-        Spacer(modifier = Modifier.height(8.dp))
-
-        SettingsCard {
-            SwitchItem(
-                title = "拨号进度浮窗位置固定",
-                subtitle = if (overlayLocked) "固定不动" else "可拖动，位置记忆",
-                checked = overlayLocked,
-                onCheckedChange = {
-                    overlayLocked = it
-                    SettingsPrefs.setOverlayLocked(context, it)
-                }
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))

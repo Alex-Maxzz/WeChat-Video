@@ -3,7 +3,7 @@
 > 面向老年人的**微信视频通话辅助** Android 应用。通过系统无障碍服务（AccessibilityService）识别并驱动微信界面，配合悬浮校准层，让老人"一键"发起微信视频通话；联系人本地存储，通话流程由状态机驱动。
 
 - **包名**：`com.elder.wechatvideo`
-- **版本**：`1.6.9_Alis`（versionCode 34）
+- **版本**：`1.7.0_Alis`（versionCode 35）
 - **最低/目标 SDK**：`minSdk 26` / `compileSdk & targetSdk 35`
 - **技术栈**：Kotlin 2.0.20 · Jetpack Compose · Hilt · Room · Navigation Compose · ML Kit 中文 OCR
 
@@ -177,7 +177,13 @@ app/src/main/
 
 > 完整版可交互文档见 [`docs/版本更新文档.html`](docs/版本更新文档.html)
 
-### V1.6.9_Alis（2026-08-03）`当前版本`
+### V1.7.0_Alis（2026-08-06）`当前版本`
+
+- 🔧 **fail() 竞态导致取消/失败后仍可能误点击（P0）**：`sm.resetToIdle()` 延迟 3 秒，期间 OCR/盲戳检查 `sm.isActive` 仍为 true 会误点击。改为立即切 IDLE
+- 🔧 **resetSearchForRetry 漏重置 searchClickRetries**：搜索结果超时重试时计数不清零，累计触发"搜索按钮无法打开"误报
+- 🧹 清理死代码：删除未调用的 AutoDialCard、失效的浮窗位置固定开关、8 个零引用僵尸常量
+
+### V1.6.9_Alis（2026-08-03）
 
 - 🔧 **重启后快捷方式误报"无障碍未开启"（P0）**：设备重启后 `Settings.Secure` 可能暂时为空，但无障碍服务已通过 `onServiceConnected` 绑定。第1道检测增加 `isConnected` 运行时标志作为替代判据，任一为 true 即通过
 

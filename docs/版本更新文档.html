@@ -204,7 +204,7 @@
 <div class="header">
   <h1>一键视频</h1>
   <div class="subtitle">老人微信视频通话一键拨打工具 · 版本更新文档</div>
-  <div class="current-version">当前版本：V1.6.9_Alis</div>
+  <div class="current-version">当前版本：V1.7.0_Alis</div>
 </div>
 
 <div class="container">
@@ -214,7 +214,7 @@
     <h2>版本概览</h2>
     <div class="summary-stats">
       <div class="stat-item">
-        <div class="num">20</div>
+        <div class="num">21</div>
         <div class="label">版本迭代</div>
       </div>
       <div class="stat-item">
@@ -232,10 +232,42 @@
     </div>
   </div>
 
-  <!-- V1.6.9 -->
+  <!-- V1.7.0 -->
   <div class="version-card">
     <div class="version-header left-border">
-      <span class="version-tag">V1.6.9_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-tag">V1.7.0_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">fail() 竞态导致取消/失败后仍可能误点击（P0）：fail() 中 sm.resetToIdle() 延迟 3 秒执行，期间 sm.isActive 仍为 true、状态仍为 SEARCHING_CONTACT。OCR 协程或坐标盲戳完成时检查 sm.isActive && state==SEARCHING_CONTACT 全部通过，会执行 gestureClickAt 点击旧坐标。修复：sm.resetToIdle() 立即执行，仅 overlay.hide() 延迟</li>
+        <li class="fix">resetSearchForRetry 漏重置 searchClickRetries：搜索结果超时重试时 searchClickRetries 不清零，累计到 MAX_SEARCH_CLICK_RETRIES(4) 触发"搜索按钮无法打开"永久失败，而搜索按钮本身从没失败过。修复：resetSearchForRetry() 补充 searchClickRetries = 0</li>
+      </ul>
+      <div class="section-title">🧹 清理</div>
+      <ul class="feature-list">
+        <li class="opt">删除未调用的 AutoDialCard（自动拨打开关已迁移到设置页）</li>
+        <li class="opt">删除失效的"浮窗位置固定"开关（SettingsScreen 有 UI、SettingsPrefs 有读写，但 OverlayController 从不读取）</li>
+        <li class="opt">删除 WeChatConstants 中 8 个零引用僵尸常量（PAGE_LOAD_TIMEOUT / ACTION_INTERVAL / NODE_FIND_TIMEOUT 等，与 CallStateMachine 超时常量重复）</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>fail()</code> 中 <code>sm.resetToIdle()</code> 移至立即执行，<code>overlay.hide()</code> 保留延迟<br>
+          <span class="file">CallStateMachine.kt</span> → <code>resetSearchForRetry()</code> 补充 <code>searchClickRetries = 0</code><br>
+          <span class="file">CalibrationScreen.kt</span> → 删除 <code>AutoDialCard</code> 函数<br>
+          <span class="file">SettingsScreen.kt / SettingsPrefs.kt</span> → 删除 <code>overlayLocked</code> 开关与读写方法<br>
+          <span class="file">WeChatConstants.kt</span> → 删除 8 个零引用超时常量与 CHAT_ACTIVITY_NAMES<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=35, versionName="1.7.0_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.6.9 -->
+  <div class="version-card">
+    <div class="version-header left-border-blue">
+      <span class="version-tag">V1.6.9_Alis</span>
       <span class="version-date">2026-08-03</span>
     </div>
     <div class="version-body">

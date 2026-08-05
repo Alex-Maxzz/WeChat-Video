@@ -146,6 +146,7 @@ class CallStateMachine {
             searchButtonClicked = false
             usedAccessibilityFallback = false
             searchEditTextRetries = 0
+            searchClickRetries = 0
         }
     }
 

@@ -633,6 +633,7 @@ class WeChatAccessibilityService : AccessibilityService() {
         // 报"无障碍服务启动中，请稍后再试"。
         pendingCall = false
         targetContactName = ""
-        handler.postDelayed({ overlay.hide(); sm.resetToIdle() }, 3000)
+        sm.resetToIdle()
+        handler.postDelayed({ overlay.hide() }, 3000)
     }
 }

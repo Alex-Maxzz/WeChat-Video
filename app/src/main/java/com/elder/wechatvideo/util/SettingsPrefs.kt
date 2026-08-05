@@ -12,7 +12,6 @@ object SettingsPrefs {
     private const val PREFS_NAME = "app_settings"
     private const val KEY_OCR_ENABLED = "ocr_enabled"
     private const val KEY_OCR_STRICT = "ocr_strict_mode"
-    private const val KEY_OVERLAY_LOCKED = "overlay_position_locked"
     private const val KEY_THEME_MODE = "theme_mode" // "system" | "dark" | "light"
 
     private fun getPrefs(context: Context) =
@@ -32,14 +31,6 @@ object SettingsPrefs {
 
     fun setOcrStrictMode(context: Context, enabled: Boolean) {
         getPrefs(context).edit().putBoolean(KEY_OCR_STRICT, enabled).apply()
-    }
-
-    /** 拨号浮窗位置固定（默认关闭=可拖动） */
-    fun isOverlayLocked(context: Context): Boolean =
-        getPrefs(context).getBoolean(KEY_OVERLAY_LOCKED, false)
-
-    fun setOverlayLocked(context: Context, locked: Boolean) {
-        getPrefs(context).edit().putBoolean(KEY_OVERLAY_LOCKED, locked).apply()
     }
 
     /** 主题模式："system"（默认）| "dark" | "light" */

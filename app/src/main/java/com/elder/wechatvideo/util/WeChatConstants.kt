@@ -178,34 +178,4 @@ object WeChatConstants {
     val VIDEO_CALL_RESOURCE_IDS_ALL: List<String> =
         VIDEO_CALL_RESOURCE_ID_MAP.values.flatten().distinct()
 
-    /* ===================== 聊天页 Activity ===================== */
-
-    val CHAT_ACTIVITY_NAMES = listOf(
-        "com.tencent.mm.ui.LauncherUI",
-        "com.tencent.mm.ui.chatting.ChattingUI",
-        "com.tencent.mm.ui.chatting.ChattingUINS"
-    )
-
-    /* ===================== 超时常量 ===================== */
-
-    /** 等待页面加载完成的最大时长（毫秒） */
-    const val PAGE_LOAD_TIMEOUT = 10000L
-
-    /** 两次无障碍操作之间的最小间隔（毫秒） */
-    const val ACTION_INTERVAL = 500L
-
-    /** 单次查找节点重试的总时长（毫秒） */
-    const val NODE_FIND_TIMEOUT = 5000L
-
-    /** 查找节点时的单次轮询间隔（毫秒） */
-    const val NODE_POLL_INTERVAL = 200L
-
-    /** 点击后等待界面响应的超时（毫秒） */
-    const val CLICK_RESPONSE_TIMEOUT = 3000L
-
-    /** 等待微信主界面加载的超时（毫秒） */
-    const val WECHAT_LAUNCH_TIMEOUT = 6000L
-
-    /** 搜索输入后等待结果列表出现的超时（毫秒） */
-    const val SEARCH_RESULT_TIMEOUT = 4000L
 }
