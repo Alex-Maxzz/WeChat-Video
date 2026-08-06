@@ -204,7 +204,7 @@
 <div class="header">
   <h1>一键视频</h1>
   <div class="subtitle">老人微信视频通话一键拨打工具 · 版本更新文档</div>
-  <div class="current-version">当前版本：V1.7.0_Alis</div>
+  <div class="current-version">当前版本：V1.7.7_Alis</div>
 </div>
 
 <div class="container">
@@ -214,7 +214,7 @@
     <h2>版本概览</h2>
     <div class="summary-stats">
       <div class="stat-item">
-        <div class="num">21</div>
+        <div class="num">28</div>
         <div class="label">版本迭代</div>
       </div>
       <div class="stat-item">
@@ -232,10 +232,171 @@
     </div>
   </div>
 
+  <!-- V1.7.7 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.7.7_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">落点校验过早执行导致误判中止（P0）：startLandingVerification 点击联系人后立即验证，页面还没跳转就检查到搜索页特征导致"进入了非聊天页面"误判。修复：首次验证延迟 STEP_DELAY(2s) 等页面跳转完成后再校验</li>
+        <li class="fix">搜索超时重搜跳过文本输入（P0）：resetSearchForRetry 漏重置 searchTextChanged 和 searchResultAttempts，超时重搜时跳过输入联系人名且节点层只试1次就掉到坐标盲戳。修复：补全重置</li>
+        <li class="fix">多分段搜索结果漏判联系人（P1）：findContactsSectionBounds 只取第一个联系人分段区间，"最常使用"+"联系人"共存时第二个分段下的联系人被漏判。修复：改为与 OCR 层一致的"最近上方标题"判断法</li>
+        <li class="fix">搜索阶段 OpenGL 误判通话已发起（P2）：isVideoCallStarted 的 opengl 检查未限定状态，搜索阶段微信使用 OpenGL 时误判。修复：opengl/SurfaceView 检查仅在已点击视频按钮后生效，VOIP 主检测不变</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>startLandingVerification()</code> 延迟验证；<code>isVideoCallStarted()</code> opengl 加状态限定<br>
+          <span class="file">CallStateMachine.kt</span> → <code>resetSearchForRetry()</code> 补全 searchTextChanged/searchResultAttempts 重置<br>
+          <span class="file">NodeFinder.kt</span> → <code>findContactInSearchResults()</code> 改用 isUnderContactSection 替代 bounds 区间法<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=42, versionName="1.7.7_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.7.6 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.7.6_Alis</span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">进入聊天页后误判中止（P0）：runLandingVerification 落点校验时 isNonChatPage 在 hasChatSessionIndicator 之前检查，聊天页无障碍树中碰巧包含负面关键词（如聊天记录里的"小程序"等）导致假阳性，直接 fail 中止拨号。修复：调换检查顺序，先确认聊天页特征再查负面关键词，已进入聊天页时不被误判</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>runLandingVerification()</code> 调换 <code>hasChatSessionIndicator</code> 和 <code>isNonChatPage</code> 检查顺序<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=41, versionName="1.7.6_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.7.5 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.7.5_Alis</span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">搜索结果误点网络搜索/公众号（P0）：微信搜索页"最常使用"和"搜索网络结果"分段标题不在识别列表里，导致分段过滤失效，联系人姓名与网络搜索条目同名时误点网络结果。修复：CONTACT_SECTION_HEADERS 加"最常使用"，NON_CONTACT_SECTION_HEADERS 加"搜索网络结果"；同时修复 findContactsSectionBounds 用 in 精确匹配导致"联系人 3"等带数字标题匹配不上的 bug</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatConstants.kt</span> → CONTACT_SECTION_HEADERS 加 <code>"最常使用"</code>，NON_CONTACT_SECTION_HEADERS 加 <code>"搜索网络结果"</code><br>
+          <span class="file">NodeFinder.kt</span> → <code>findContactsSectionBounds()</code> 用 <code>isSectionHeader()</code> 替代 <code>in</code> 精确匹配，支持"联系人 3"等带数字标题<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=40, versionName="1.7.5_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.7.4 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.7.4_Alis</span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">视频通话菜单验证假阳性（P0）：tryClickVideoConfirm 验证选择菜单是否弹出时，findVideoCallButton 和 VIDEO_CALL_TEXTS 会在 + 面板还开着时匹配到"视频通话"文本（+ 面板里本来就有这个选项），导致假成功——显示"已打开通话菜单"但实际 + 面板还开着。修复：只检查"语音通话"文本（仅出现在视频/语音选择菜单，+ 面板没有），未弹出则 fail 报错，杜绝静默假成功</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>tryClickVideoConfirm()</code> 删除 findVideoCallButton 和 VIDEO_CALL_TEXTS 两个假阳性条件，只保留 <code>"语音通话"</code> 文本检查<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=39, versionName="1.7.4_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.7.3 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.7.3_Alis</span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">clickNode performAction 返回 false 时不兜底坐标点击（P0）：微信 + 面板视频通话节点找到但 performAction(ACTION_CLICK) 返回 false（微信将容器设为不可点击），之前只打 warning 日志就跳过，点击没生效但流程继续推进。导致自动拨打开时坐标偏移点到转账、自动拨打关时停在 + 面板误报已打开菜单。修复：performAction 失败时用节点屏幕坐标 gestureClickAt 兜底点击</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>clickNode()</code> performAction 返回 false 时用 <code>getBoundsInScreen</code> + <code>gestureClickAt</code> 兜底<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=38, versionName="1.7.3_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.7.2 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.7.2_Alis</span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">校准页面重启后误报无障碍未开启：CalibrationScreen 只调 Settings.Secure 读取，重启后可能暂时返回空。修复：改用 isConnected || isAccessibilityServiceEnabled 双重判断，与 CallBridgeActivity 一致</li>
+        <li class="fix">视频通话坐标点击偏移到转账（P0）：tryClickVideoCall 有坐标就直接点、跳过节点查找，冷启动或坐标偏移时点到了转账按钮。修复：改为节点优先查找，节点找不到才用坐标兜底</li>
+        <li class="fix">auto_dial=false 时不验证视频菜单是否弹出就误判成功：tryClickVideoConfirm 直接 showProgress("已打开通话菜单") 并 DONE，实际可能只到 + 面板。修复：增加落地验证，检查节点树是否有"视频通话""语音通话"文本，未弹出则 fail 提示重新校准</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">CalibrationScreen.kt</span> → hasAccessibility 改用 <code>WeChatAccessibilityService.isConnected || isAccessibilityServiceEnabled()</code><br>
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>tryClickVideoCall()</code> 节点优先，坐标兜底<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>tryClickVideoConfirm()</code> auto_dial=false 时验证视频菜单节点<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=37, versionName="1.7.2_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- V1.7.1 -->
+  <div class="version-card">
+    <div class="version-header left-border">
+      <span class="version-tag">V1.7.1_Alis</span>
+      <span class="version-date">2026-08-06</span>
+    </div>
+    <div class="version-body">
+      <div class="section-title">🔧 修复</div>
+      <ul class="feature-list">
+        <li class="fix">gradle.properties 机器特定路径迁移不完整：org.gradle.java.home 和 android.aapt2FromMavenOverride 放入 local.properties 后 Gradle 不读取，命令行构建找不到 JDK、PNG 压缩崩溃回归。修复：两行移至用户级 ~/.gradle/gradle.properties（不落库，Gradle 能正确读取）</li>
+        <li class="fix">fail() 立即复位后新增微小竞态：失败后 3 秒内用户重新发起呼叫，旧 overlay.hide() 延迟回调会在第 3 秒提前隐藏新流程的进度浮层。修复：beginCallFlow() 开头加 handler.removeCallbacksAndMessages(null) 清除旧回调</li>
+        <li class="fix">SettingsPrefs.kt 类注释过时：仍写着"浮窗位置锁定"但该开关已删除。修复：移除过时描述</li>
+      </ul>
+      <div class="tech-path">
+        <div class="tech-path-label">技术路径</div>
+        <div class="tech-path-content">
+          <span class="file">~/.gradle/gradle.properties</span> → 新建用户级配置文件，写入 org.gradle.java.home 和 aapt2FromMavenOverride<br>
+          <span class="file">WeChatAccessibilityService.kt</span> → <code>beginCallFlow()</code> 开头加 <code>handler.removeCallbacksAndMessages(null)</code><br>
+          <span class="file">SettingsPrefs.kt</span> → 类注释删除"浮窗位置锁定"<br>
+          <span class="keyword">build.gradle.kts</span> → versionCode=36, versionName="1.7.1_Alis"
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- V1.7.0 -->
   <div class="version-card">
     <div class="version-header left-border">
-      <span class="version-tag">V1.7.0_Alis <span class="badge current">当前版本</span></span>
+      <span class="version-tag">V1.7.0_Alis</span>
       <span class="version-date">2026-08-06</span>
     </div>
     <div class="version-body">

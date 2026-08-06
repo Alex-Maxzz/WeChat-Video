@@ -9,7 +9,7 @@
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Hilt-DI-2.52)](https://dagger.dev/hilt)
 [![MinSDK](https://img.shields.io/badge/minSDK-26%20(8.0)-blue)]()
-[![Version](https://img.shields.io/badge/version-1.7.6__Alis-green)]()
+[![Version](https://img.shields.io/badge/version-1.7.7__Alis-green)]()
 
 
 [功能特性](#-功能特性) · [技术架构](#️-技术架构) · [快速开始](#-快速开始) · [版本记录](#-版本记录) · [隐私说明](#-隐私说明)
@@ -178,7 +178,14 @@ gradle wrapper
 
 ## 📝 版本更新记录
 
-### V1.7.6_Alis（2026-08-06）`当前版本`
+### V1.7.7_Alis（2026-08-06）`当前版本`
+
+- 🔧 **落点校验过早执行导致误判中止（P0）**：`startLandingVerification` 点击联系人后立即验证，页面还没跳转就检查到搜索页特征导致"进入了非聊天页面"误判。修复：首次验证延迟 STEP_DELAY(2s) 等页面跳转完成后再校验
+- 🔧 **搜索超时重搜跳过文本输入（P0）**：`resetSearchForRetry` 漏重置 `searchTextChanged` 和 `searchResultAttempts`，超时重搜时跳过输入联系人名且节点层只试1次就掉到坐标盲戳。修复：补全重置
+- 🔧 **多分段搜索结果漏判联系人（P1）**：`findContactsSectionBounds` 只取第一个联系人分段区间，"最常使用"+"联系人"共存时第二个分段下的联系人被漏判。修复：改为与 OCR 层一致的"最近上方标题"判断法
+- 🔧 **搜索阶段 OpenGL 误判通话已发起（P2）**：`isVideoCallStarted` 的 opengl 检查未限定状态，搜索阶段微信使用 OpenGL 时误判。修复：opengl/SurfaceView 检查仅在已点击视频按钮后生效，VOIP 主检测不变
+
+### V1.7.6_Alis（2026-08-06）
 
 - 🔧 **进入聊天页后误判中止（P0）**：`runLandingVerification` 落点校验时 `isNonChatPage` 在 `hasChatSessionIndicator` 之前检查，聊天页无障碍树中碰巧包含负面关键词导致假阳性。修复：调换检查顺序，先确认聊天页特征再查负面关键词
 

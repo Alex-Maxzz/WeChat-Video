@@ -67,7 +67,7 @@ class NodeFinder {
         val rawNodes = root.findAccessibilityNodeInfosByText(targetName)
         var result: AccessibilityNodeInfo? = null
         try {
-            val sectionBounds = findContactsSectionBounds(root) ?: return null
+            val headers = findAllSectionHeaders(root)
             val candidates = rawNodes.filter { node ->
                 val text = node.text?.toString() ?: return@filter false
                 val isExact = text == targetName
@@ -75,7 +75,10 @@ class NodeFinder {
                     text.startsWith(targetName, ignoreCase = true) &&
                     text.length <= targetName.length + 1
                 if (!isExact && !isPrefix) return@filter false
-                if (!isWithinBounds(node, sectionBounds)) return@filter false
+                // 与 OCR 层一致的"最近上方标题"判断法：
+                // 候选节点上方最近的分段标题必须是联系人分段（联系人/朋友/最常使用），
+                // 否则视为群聊/公众号等非联系人分段下的结果，排除。
+                if (!isUnderContactSection(node, headers)) return@filter false
                 if (containsNegativeKeyword(node)) return@filter false
                 true
             }
@@ -219,18 +222,38 @@ class NodeFinder {
         return null
     }
 
-    private fun findContactsSectionBounds(root: AccessibilityNodeInfo): Pair<Float, Float>? {
-        val headers = findAllSectionHeaders(root)
-        val contactHeader = headers.firstOrNull { header ->
-            WeChatConstants.CONTACT_SECTION_HEADERS.any { isSectionHeader(header.first, it) }
-        }
-            ?: return null
-        val nextHeader = headers
-            .filter { it.second > contactHeader.second + 1f }
-            .minByOrNull { it.second }
-        val screenBottom = 10000f
-        val bottomY = nextHeader?.second ?: screenBottom
-        return contactHeader.second to bottomY
+    /**
+     * 判断候选节点是否位于联系人分段（联系人/朋友/最常使用）之下。
+     *
+     * 与 OCR 层 [OcrHelper.recognizeAndFind] 的分段上下文校验保持一致：
+     * 取候选节点上方 Y 坐标最近的分段标题，判断其是否为联系人分段。
+     * - 若最近上方标题是联系人分段 → true（保留候选）
+     * - 若最近上方标题是非联系人分段（群聊/公众号等）→ false（排除）
+     * - 若上方无任何分段标题（搜索框区域/异常布局）→ false（排除）
+     *
+     * 相比原 bounds 区间法，此方法正确处理"最常使用"+"联系人"多分段共存场景：
+     * bounds 法只取第一个联系人分段区间，导致第二个分段下的联系人被漏判。
+     */
+    private fun isUnderContactSection(
+        node: AccessibilityNodeInfo,
+        headers: List<Pair<String, Float>>
+    ): Boolean {
+        val rect = Rect()
+        node.getBoundsInScreen(rect)
+        val nodeY = rect.exactCenterY()
+
+        val nearestContact = headers
+            .filter { it.second <= nodeY && WeChatConstants.CONTACT_SECTION_HEADERS.any { h -> isSectionHeader(it.first, h) } }
+            .maxByOrNull { it.second }
+        val nearestNonContact = headers
+            .filter { it.second <= nodeY && WeChatConstants.NON_CONTACT_SECTION_HEADERS.any { h -> isSectionHeader(it.first, h) } }
+            .maxByOrNull { it.second }
+
+        // 上方无任何分段标题 → 排除（搜索框区域或异常布局）
+        if (nearestContact == null && nearestNonContact == null) return false
+        // 非联系人标题更近 → 排除
+        if (nearestNonContact != null && (nearestContact == null || nearestNonContact.second > nearestContact.second)) return false
+        return true
     }
 
     private fun findAllSectionHeaders(root: AccessibilityNodeInfo): List<Pair<String, Float>> {
@@ -272,12 +295,6 @@ class NodeFinder {
             return remainder.matches(Regex("\\s*\\d*")) && remainder.isNotBlank()
         }
         return false
-    }
-
-    private fun isWithinBounds(node: AccessibilityNodeInfo, bounds: Pair<Float, Float>): Boolean {
-        val rect = Rect()
-        node.getBoundsInScreen(rect)
-        return rect.exactCenterY() >= bounds.first && rect.exactCenterY() < bounds.second
     }
 
     private fun containsNegativeKeyword(node: AccessibilityNodeInfo): Boolean {

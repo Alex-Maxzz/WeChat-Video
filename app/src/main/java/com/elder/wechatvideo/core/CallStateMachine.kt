@@ -147,6 +147,10 @@ class CallStateMachine {
             usedAccessibilityFallback = false
             searchEditTextRetries = 0
             searchClickRetries = 0
+            // P0 修复：漏重置这两个字段会导致重搜时跳过文本输入（searchTextChanged=true）
+            // 且节点层只试 1 次就掉到 OCR/坐标层（searchResultAttempts 已达上限）。
+            searchTextChanged = false
+            searchResultAttempts = 0
         }
     }
 

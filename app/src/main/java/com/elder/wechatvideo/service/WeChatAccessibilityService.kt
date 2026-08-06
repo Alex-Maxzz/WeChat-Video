@@ -379,7 +379,7 @@ class WeChatAccessibilityService : AccessibilityService() {
     /* ===================== 落点校验 ===================== */
 
     private fun startLandingVerification() {
-        runLandingVerification()
+        postDelayedSafely(STEP_DELAY) { runLandingVerification() }
     }
 
     private fun runLandingVerification() {
@@ -626,10 +626,13 @@ class WeChatAccessibilityService : AccessibilityService() {
     /* ===================== 辅助 ===================== */
 
     private fun isVideoCallStarted(className: String): Boolean {
-        return className.contains("VOIP", ignoreCase = true) ||
-               className.contains("opengl", ignoreCase = true) ||
-               (className.contains("SurfaceView", ignoreCase = true) &&
-                (sm.state == State.CLICKING_VIDEO || sm.state == State.CLICKING_VIDEO_CONFIRM))
+        // VOIP 是视频通话 Activity 的主类名，任何状态都可信赖
+        if (className.contains("VOIP", ignoreCase = true)) return true
+        // opengl / SurfaceView 是兜底检测：仅在已点击视频/确认按钮后生效，
+        // 避免搜索阶段微信使用 OpenGL（搜索动画/视频预览）时误判为通话已发起。
+        return (className.contains("opengl", ignoreCase = true) ||
+                className.contains("SurfaceView", ignoreCase = true)) &&
+               (sm.state == State.CLICKING_VIDEO || sm.state == State.CLICKING_VIDEO_CONFIRM)
     }
 
     private fun showProgress(msg: String) {
