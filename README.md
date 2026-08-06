@@ -9,7 +9,7 @@
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Hilt-DI-2.52)](https://dagger.dev/hilt)
 [![MinSDK](https://img.shields.io/badge/minSDK-26%20(8.0)-blue)]()
-[![Version](https://img.shields.io/badge/version-1.7.5__Alis-green)]()
+[![Version](https://img.shields.io/badge/version-1.7.6__Alis-green)]()
 
 
 [功能特性](#-功能特性) · [技术架构](#️-技术架构) · [快速开始](#-快速开始) · [版本记录](#-版本记录) · [隐私说明](#-隐私说明)
@@ -178,7 +178,11 @@ gradle wrapper
 
 ## 📝 版本更新记录
 
-### V1.7.5_Alis（2026-08-06）`当前版本`
+### V1.7.6_Alis（2026-08-06）`当前版本`
+
+- 🔧 **进入聊天页后误判中止（P0）**：`runLandingVerification` 落点校验时 `isNonChatPage` 在 `hasChatSessionIndicator` 之前检查，聊天页无障碍树中碰巧包含负面关键词导致假阳性。修复：调换检查顺序，先确认聊天页特征再查负面关键词
+
+### V1.7.5_Alis（2026-08-06）
 
 - 🔧 **搜索结果误点网络搜索/公众号（P0）**：微信搜索页"最常使用"和"搜索网络结果"分段标题不在识别列表里，导致分段过滤失效。修复：`CONTACT_SECTION_HEADERS` 加"最常使用"，`NON_CONTACT_SECTION_HEADERS` 加"搜索网络结果"；同时修复 `findContactsSectionBounds` 用 `in` 精确匹配导致"联系人 3"等带数字标题匹配不上的 bug
 

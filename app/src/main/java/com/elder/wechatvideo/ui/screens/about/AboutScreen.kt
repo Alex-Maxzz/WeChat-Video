@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.7.6",
+            date = "2026-08-06",
+            changes = "· 修复进入聊天页后误判中止（P0）：runLandingVerification 落点校验时 isNonChatPage 在 hasChatSessionIndicator 之前检查，聊天页无障碍树中碰巧包含负面关键词（如聊天记录里的\"小程序\"等）导致假阳性，直接 fail 中止拨号。修复：调换检查顺序，先确认聊天页特征再查负面关键词，已进入聊天页时不被误判"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.7.5",
             date = "2026-08-06",
             changes = "· 修复搜索结果误点网络搜索/公众号（P0）：微信搜索页\"最常使用\"和\"搜索网络结果\"分段标题不在识别列表里，导致分段过滤失效，联系人姓名与网络搜索条目同名时误点网络结果。修复：CONTACT_SECTION_HEADERS 加\"最常使用\"，NON_CONTACT_SECTION_HEADERS 加\"搜索网络结果\"；同时修复 findContactsSectionBounds 用 in 精确匹配导致\"联系人 3\"等带数字标题匹配不上的 bug"

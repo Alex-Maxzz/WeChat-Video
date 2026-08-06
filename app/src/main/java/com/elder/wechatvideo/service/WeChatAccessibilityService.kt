@@ -389,12 +389,12 @@ class WeChatAccessibilityService : AccessibilityService() {
         when {
             nodeFinder.isOfficialAccountPage(root) ->
                 fail("误入公众号，已中止（未误拨）")
-            nodeFinder.isNonChatPage(root) ->
-                fail("进入了非聊天页面，已中止")
             nodeFinder.hasChatSessionIndicator(root) -> {
                 sm.transitionTo(State.CLICKING_CONTACT)
                 postDelayedSafely(STEP_DELAY) { if (sm.state == State.CLICKING_CONTACT) tryClickPlusButton() }
             }
+            nodeFinder.isNonChatPage(root) ->
+                fail("进入了非聊天页面，已中止")
             !nodeFinder.isOnSearchResultsPage(root) -> {
                 // 离开了搜索结果页但没有聊天页特征，继续等一帧（可能页面还在加载）
                 scheduleLandingPoll()
