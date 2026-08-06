@@ -221,7 +221,9 @@ class NodeFinder {
 
     private fun findContactsSectionBounds(root: AccessibilityNodeInfo): Pair<Float, Float>? {
         val headers = findAllSectionHeaders(root)
-        val contactHeader = headers.firstOrNull { it.first in WeChatConstants.CONTACT_SECTION_HEADERS }
+        val contactHeader = headers.firstOrNull { header ->
+            WeChatConstants.CONTACT_SECTION_HEADERS.any { isSectionHeader(header.first, it) }
+        }
             ?: return null
         val nextHeader = headers
             .filter { it.second > contactHeader.second + 1f }

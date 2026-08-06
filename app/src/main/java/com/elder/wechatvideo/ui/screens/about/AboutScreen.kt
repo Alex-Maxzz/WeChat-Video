@@ -158,6 +158,12 @@ private fun AboutContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         ChangelogCard(
+            version = "V1.7.5",
+            date = "2026-08-06",
+            changes = "· 修复搜索结果误点网络搜索/公众号（P0）：微信搜索页\"最常使用\"和\"搜索网络结果\"分段标题不在识别列表里，导致分段过滤失效，联系人姓名与网络搜索条目同名时误点网络结果。修复：CONTACT_SECTION_HEADERS 加\"最常使用\"，NON_CONTACT_SECTION_HEADERS 加\"搜索网络结果\"；同时修复 findContactsSectionBounds 用 in 精确匹配导致\"联系人 3\"等带数字标题匹配不上的 bug"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ChangelogCard(
             version = "V1.7.4",
             date = "2026-08-06",
             changes = "· 修复视频通话菜单验证假阳性（P0）：tryClickVideoConfirm 验证菜单是否弹出时，findVideoCallButton 和 VIDEO_CALL_TEXTS 会在 +面板还开着时匹配到\"视频通话\"文本导致假成功。修复：只检查\"语音通话\"文本（仅出现在选择菜单，+面板没有），未弹出则 fail 报错，杜绝静默假成功"
